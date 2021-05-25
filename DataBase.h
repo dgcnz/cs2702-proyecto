@@ -1,6 +1,5 @@
 #pragma once
 
-#include <extendible-hashing.h>
 #include <btree.h>
 #include <pagemanager.h>
 
@@ -15,7 +14,6 @@ public:
 private:
     char *filename;
     std::fstream file;
-    db::Hashing hash;
     db::disk::btree<char *, BTREE_ORDER> bt;
 };
 

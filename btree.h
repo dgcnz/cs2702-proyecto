@@ -17,7 +17,7 @@ template <class T, int BTREE_ORDER = 3> class btree {
 public:
   struct node {
     long page_id{-1};
-		long next_id{-1};
+	long next_id{-1};
     long count{0};
     
     T data[BTREE_ORDER + 1];
@@ -42,9 +42,9 @@ public:
 
       data[j] = value;
       children[j + 1] = children[j];
-			
-			count++;
-		}
+
+		count++;
+	}
 
 
 		void erase_in_node (int index) {
@@ -155,7 +155,6 @@ public:
       pm->save(root.page_id, root);
 
       header.count++;
-
       pm->save(0, header);
     } else {
       pm->recover(0, header);
@@ -297,13 +296,12 @@ public:
  
 
 	void merge (node &parent, int pos) {
-    node ptr = this->read_node(parent.children[pos + 1]);
+    	node ptr = this->read_node(parent.children[pos + 1]);
 		node root_ptr = this->read_node (this->header.root_id);
 		node left = this->new_node();
-    node right = this->new_node();
+    	node right = this->new_node();
 
-    int iter = 0;
-    int i;
+    	int iter = 0, i;
 		
 		if (!parent.data[pos - 1]) { //if leaf left is empty
 			for (i = 0; iter < BTREE_ORDER / 2; i++) {
@@ -355,7 +353,7 @@ public:
     left.children[i] = ptr.children[iter];
 		
 		if (ptr.children[iter] == 0) {
-			iter ++; // the middle element
+			iter++; // the middle element
 			for (i = 0; iter < BTREE_ORDER + 1; i++) {
 				right.children[i] = ptr.children[iter];
 				right.data[i] = ptr.data[iter - 1];
