@@ -1,4 +1,4 @@
-#include "BufferFile.cpp"
+#include "BufferFile.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -22,7 +22,7 @@ int BufferFile::open (char *filename) {
 }
 
 int BufferFile::create(char *filename) {
-	file.open ((const char *)filename, std::ios::out | std::ios::binary);
+	file.open ((const char *) filename, std::ios::binary);
 
 	if (!file.good()) {
 		file.close();
@@ -45,10 +45,10 @@ int BufferFile::read_all() {
 int BufferFile::read_disk(int addr) {
 	if (file.eof()) return -1;
 
-	int addr = file.tellg();
+	//int addr = file.tellg();
 	unsigned short bff_size;
 
-	clear();
+	//clear();
 
 	file.read((char *) &bff_size, sizeof(bff_size));
 
@@ -59,7 +59,7 @@ int BufferFile::read_disk(int addr) {
 
 	buffer_size = bff_size;
 
-	if (buffer_size > size) return -1;
+	//if (buffer_size > size) return -1;
 
 	file.read(buffer, buffer_size);
 
@@ -69,4 +69,39 @@ int BufferFile::read_disk(int addr) {
 	}
 
 	return addr;
-}	
+}
+
+int BufferFile::insert (char *key, int disk_addr) {
+	if (file.eof()) return -1;
+
+	char *current_key = new char [10000];
+	int pos = file.tellg();
+
+	file.read((char *) current_key, sizeof(10000));
+
+	if (current_key != nullptr && current_key[0] == '\0') {
+		Register reg (key, -1, disk_addr);
+
+		file.write((char *) &key, 10000);
+		file.write((char *) &reg, sizeof(reg));
+
+		std::cout << "hi\n";
+		return 1;
+	}
+
+	while (key > current_key) {
+		std::cout << "here\n";
+		file.read((char *) current_key, sizeof(10000));
+		file.read((char *) buffer, sizeof(int) * 2);
+
+		std::cout << buffer;
+
+		pos = file.tellg();
+		if (file.fail()) {
+			file.clear();
+			return -1;
+		}
+	}
+
+	
+}
