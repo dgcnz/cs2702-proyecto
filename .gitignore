@@ -6,3 +6,4 @@ cmake-build-debug/
 CMakeFiles/
 conda/
 *.swp
+CMakeLists.txt
