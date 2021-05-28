@@ -47,7 +47,7 @@ int SequentialFile<>::create(char *name) {
 
 	int result = dir_file->create(dir_name);
 	
-	if (!result) return 0;
+	if (result == -1) return -1;
 
 	filename = dir_name;
 

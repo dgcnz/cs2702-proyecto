@@ -22,12 +22,12 @@ int BufferFile::open (char *filename) {
 }
 
 int BufferFile::create(char *filename) {
-	file.open ((const char *) filename, std::ios::binary);
+	file.open ((const char *) filename, std::ios::in | std::ios::out | std::ios::binary);
 
 	if (!file.good()) {
 		file.close();
 		file.clear();
-		return false;
+		return -1;
 	}
 
 	return 1;
@@ -78,11 +78,12 @@ int BufferFile::insert (char *key, int disk_addr) {
 	int pos = file.tellg();
 
 	file.read((char *) current_key, sizeof(10000));
+	std::cout << "curr_key:" << *key << '\n';
 
 	if (current_key != nullptr && current_key[0] == '\0') {
 		Register reg (key, -1, disk_addr);
 
-		file.write((char *) &key, 10000);
+		file.write((char *) key, sizeof(key));
 		file.write((char *) &reg, sizeof(reg));
 
 		std::cout << "hi\n";
