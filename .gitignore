@@ -7,3 +7,4 @@ CMakeFiles/
 conda/
 *.swp
 CMakeLists.txt
+graphic-interface/node_modules/
