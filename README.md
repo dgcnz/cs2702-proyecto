@@ -10,66 +10,36 @@
 - Docente: Heider Sanchez
 - Ciclo: 2021-01
 
-Requirements
--------------
-The basic requirements for this example is a anaconda enviroment:
+## Introducción
+### Objetivo del proyecto
+En la actualidad, las bases de datos cuplen un rol fundamental. Representan una forma estructurada de almacenar, administrar y gestionar la infromación. Sin estas, ningun sistema de información digital que conocemos habria sido posible. Asi mismo, los algoritmos utilizados para transaccionar con los datos almacenados son tan importantes como las estructuras de datos empleadas. En el presente proyecto se implementarán las estruturas de datos `Sequential File` y `B+ Tree` para almacenar la información y se desarrollará un gestor de base de datos que permitirá insertar, buscar y eliminar registros sobre estas estructuras. 
 
 
-## Installation on LINUX/UNIX Systems
-
-Download miniconda from
-
-https://docs.conda.io/en/latest/miniconda.html
-
-```
-chmod +x Miniconda3-latest-Linux-x86_64.sh
-bash Miniconda3-latest-Linux-x86_64.sh
-source activate base
-```
-
-## Installation the following packages
-
-```
-conda install -c anaconda cmake
-conda install -c conda-forge gtest
-conda install -c conda-forge gmock
-conda install -c hi2p-perim fmt
-conda install -c anaconda ncurses
-```
-
-#### Note for osx:
-` brew install fmt` and change the following lines in CMakeList.txt
-```
-$ENV{CONDA_PREFIX}/lib/libgmock_main.so
-$ENV{CONDA_PREFIX}/lib/libgmock.so )
-```
-
-it should be 
-```
-$ENV{CONDA_PREFIX}/lib/libgmock_main.a
-$ENV{CONDA_PREFIX}/lib/libgmock.a )
-
-```
+### Dominio de datos
 
 
-Build process
--------------
-```
-./conda/recipes/databases/build.sh
-```
+### Resultados esperados
 
-run gtest:
-```
-./hash-gtest
-```
+### Costos de operaciones en términos de acceso a la memoria secundaria
 
-or 
+## Descrición de las estructuras implmentadas
 
-```
-cd /my_project_path/
-mkdir build
-cd build
-cmake ..
-make all
-./hash-gtest
-```
+### B+Tree
+#### Descripción
+#### Búsqueda
+#### Búsqueda por rango
+#### Inserción
+#### Eliminación
+
+### Sequential File
+#### Descripción
+#### Búsqueda
+#### Búsqueda por rango
+#### Inserción
+#### Eliminación
+
+## Transaciones y Testing
+## Resultados experimentales
+
+## Video de presentación
+>>>>>>> 8f5a40e0852deeea61eb6f3b257ee7a75a99b57f
