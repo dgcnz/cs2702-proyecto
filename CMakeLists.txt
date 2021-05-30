@@ -107,7 +107,7 @@ endfunction ()
 
 blazingdb_artifact (
         TARGET
-            hash
+            btree
 
         INCLUDES PUBLIC 
             $ENV{CONDA_PREFIX}/include
@@ -132,7 +132,6 @@ blazingdb_artifact (
 
         TESTS
           tests/btree_test.cpp
-          # tests/hash_test.cpp
           tests/database_test.cpp
 
 )

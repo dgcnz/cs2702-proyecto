@@ -1,185 +1,166 @@
 #pragma once
 
 #include "pagemanager.h"
+#include <algorithm>
+#include <array>
+#include <cassert>
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 #include <memory>
-#include <optional>
+#include <utility>
 
 namespace db
 {
 namespace disk
 {
 
-enum state
+template <class T, int BTREE_ORDER>
+class btree;
+
+template <class T, int BTREE_ORDER>
+class node;
+
+template <class T, int BTREE_ORDER>
+struct btree_iterator
 {
-    BT_OVERFLOW,
-    BT_UNDERFLOW,
-    OKK,
+    using node              = typename btree<T, BTREE_ORDER>::node;
+    using iterator_category = std::forward_iterator_tag;
+    using difference_type   = std::ptrdiff_t;
+    using value_type        = T;
+    using pointer           = T *;
+    using reference         = T &;
+
+    btree<T, BTREE_ORDER> const &bt;
+    long                         page_id;
+    int                          offset;
+    btree_iterator(btree<T, BTREE_ORDER> const &bt,
+                   long                         page_id,
+                   int                          offset = 0)
+        : bt(bt), page_id(page_id), offset(offset)
+    {
+    }
+    btree_iterator &operator=(btree_iterator other)
+    {
+        page_id = other.page_id;
+        offset  = other.offset;
+        return *this;
+    }
+
+    btree_iterator &operator++()
+    {
+        node n = bt.read_node(page_id);
+        offset++;
+        if (n.count <= offset)
+        {
+            page_id = n.next_id;
+            offset  = 0;
+        }
+        return *this;
+    }
+
+    btree_iterator operator++(int)
+    {
+        btree_iterator it{*this};
+        ++(*this);
+        return it;
+    }
+
+    inline bool operator==(btree_iterator<T, BTREE_ORDER> const &other) const
+    {
+        return (page_id == other.page_id) and
+               (page_id == -1 or offset == other.offset);
+    }
+    inline bool operator!=(btree_iterator<T, BTREE_ORDER> const &other) const
+    {
+        return !(operator==(other));
+    }
+
+    T operator*() const
+    {
+        node n = bt.read_node(page_id);
+        return n.data[offset];
+    }
+};
+
+template <class T, int BTREE_ORDER>
+struct node
+{
+    using iterator = disk::btree_iterator<T, BTREE_ORDER>;
+    long page_id{-1};
+    long next_id{-1};
+    long count{0};
+
+    std::array<T, BTREE_ORDER + 1>    data;
+    std::array<long, BTREE_ORDER + 2> children;
+
+    node(long page_id) : page_id{page_id}, count(0), children{0}, data{0}
+    {
+        std::fill(std::begin(children), std::end(children), 0);
+    }
+
+    void insert_in_node(int pos, const T &value)
+    {
+        int j = count;
+        while (j > pos)
+        {
+            data[j]         = data[j - 1];
+            children[j + 1] = children[j];
+            j--;
+        }
+        data[j]         = value;
+        children[j + 1] = children[j];
+
+        count++;
+    }
+    int lower_bound(T const &value) const
+    {
+        int pos = 0;
+        while (pos < count and data[pos] < value)
+            ++pos;
+        return pos;
+    }
+    bool is_overflow() const { return count > BTREE_ORDER; }
+    bool is_leaf() const
+    {
+        return std::count(begin(children), end(children), 0) == children.size();
+    }
+    bool is_invalid() const { return page_id == -1; }
 };
 
 template <class T, int BTREE_ORDER = 3>
 class btree
 {
   public:
-    struct node
-    {
-        long page_id{-1};
-        long next_id{-1};
-        long count{0};
-
-        T    data[BTREE_ORDER + 1];
-        long children[BTREE_ORDER + 2];
-
-        node(long page_id) : page_id{page_id}
-        {
-            count = 0;
-            for (int i = 0; i < BTREE_ORDER + 2; i++)
-            {
-                children[i] = 0;
-            }
-        }
-
-        // insert value in data and children by index
-        void insert_in_node(int index, const T &value)
-        {
-            int j = count;
-
-            while (j > index)
-            {
-                data[j]         = data[j - 1];
-                children[j + 1] = children[j];
-                j--;
-            }
-
-            data[j]         = value;
-            children[j + 1] = children[j];
-
-            count++;
-        }
-
-        void erase_in_node(int index)
-        {
-            int j = count;
-
-            while (j > index)
-            {
-                data[j - 1]     = data[j];
-                children[j - 1] = children[j];
-                j--;
-            }
-
-            children[j - 1] = children[j];
-            count--;
-        }
-
-        bool is_overflow() { return count > BTREE_ORDER; }
-        bool is_underflow() { return count < (BTREE_ORDER / 2); }
-    };
-
+    using node     = disk::node<T, BTREE_ORDER>;
+    using iterator = disk::btree_iterator<T, BTREE_ORDER>;
     struct Metadata
     {
         long root_id{1};
         long count{0};
     } header;
 
+    enum state
+    {
+        BT_OVERFLOW,
+        BT_UNDERFLOW,
+        NORMAL,
+    };
+
   private:
     std::shared_ptr<pagemanager> pm;
 
   public:
-    class iterator : std::iterator<std::forward_iterator_tag, T, T, T *, T &>
-    {
-        std::optional<node>    root;
-        std::optional<node>    ending;
-        int                    pos     = 0;
-        int                    pos_end = 0;
-        btree<T, BTREE_ORDER> *instance;
-
-      public:
-        iterator(btree *instance) : instance(instance) {}
-        iterator(btree *instance, node start)
-        {
-            root = std::make_optional(start);
-        }
-        iterator(btree *instance, node start, int count) : instance(instance)
-        {
-            root = std::make_optional(start);
-            pos  = count;
-        }
-        iterator(
-            btree *instance, node start, int count, node end, int count_end)
-            : instance(instance)
-        {
-            root    = std::make_optional(start);
-            ending  = std::make_optional(end);
-            pos     = count;
-            pos_end = count_end;
-        }
-        iterator &operator++()
-        {
-            // if root does exists/null
-            if (!root)
-            {
-                return *this;
-            }
-
-            // if pos does not overflow root
-            if (root.value().count - 1 > pos)
-            {
-                pos++;
-                return *this;
-            }
-
-            // if pos++ is at the end node
-            if (ending &&
-                ending.value().data[pos_end] == root.value().data[pos])
-            {
-                root = std::nullopt;
-                return *this;
-            }
-
-            // id pos++ is in the next node
-            root =
-                std::make_optional(instance->read_node(root.value().next_id));
-            return *this;
-        }
-        iterator operator++(int)
-        {
-            iterator it = *this;
-            ++(*this);
-            return *this;
-        }
-
-        bool operator==(iterator &it) const
-        {
-            if (!root && !it.root)
-                return true;
-
-            if (!root || !it.root)
-                return false;
-
-            if (root.value().data[pos] == it.root.value().data[pos])
-            {
-                return true;
-            }
-        }
-
-        bool operator!=(iterator &it) const { return !(*this == it); }
-
-        T operator*() { return root.value().data[pos]; }
-    };
     btree(std::shared_ptr<pagemanager> pm) : pm{pm}
     {
         if (pm->is_empty())
         {
             node root{header.root_id};
             pm->save(root.page_id, root);
-
             header.count++;
             pm->save(0, header);
         }
         else
-        {
             pm->recover(0, header);
-        }
     }
 
     node new_node()
@@ -190,10 +171,11 @@ class btree
         return ret;
     }
 
-    node read_node(long page_id)
+    node read_node(long page_id) const
     {
         node n{-1};
-        pm->recover(page_id, n);
+        if (page_id != -1)
+            pm->recover(page_id, n);
         return n;
     }
 
@@ -206,188 +188,77 @@ class btree
         int  state = insert(root, value);
 
         if (state == BT_OVERFLOW)
-        {
             split_root();
-        }
     }
 
     int insert(node &ptr, const T &value)
     {
-        int index = 0;
-
-        while (index < ptr.count && ptr.data[index] < value)
+        int pos = 0;
+        while (pos < ptr.count && ptr.data[pos] < value)
+            pos++;
+        if (ptr.children[pos] != 0)
         {
-            index++;
-        }
-
-        if (ptr.children[index] != 0)
-        {
-            long page_id = ptr.children[index];
+            long page_id = ptr.children[pos];
             node child   = read_node(page_id);
             int  state   = insert(child, value);
             if (state == BT_OVERFLOW)
-            {
-                split(ptr, index);
-            }
+                split(ptr, pos);
         }
         else
         {
-            ptr.insert_in_node(index, value);
+            ptr.insert_in_node(pos, value);
             write_node(ptr.page_id, ptr);
         }
-        return ptr.is_overflow() ? BT_OVERFLOW : OKK;
-    }
-
-    void erase(const T &value)
-    {
-        node root  = read_node(header.root_id);
-        int  state = erase(root, value);
-
-        if (state == BT_UNDERFLOW)
-        {
-            std::cout << "merge_root\n";
-            merge_root();
-        }
-    }
-
-    int erase(node &ptr, const T &value)
-    {
-        int index = 0;
-
-        while (index < ptr.count && ptr.data[index] <= value)
-        {
-            if (ptr.data[index] == value)
-            {
-                std::cout << "index-> " << index << '\n';
-                ptr.erase_in_node(index);
-            }
-            index++;
-        }
-
-        if (ptr.children[index] != 0)
-        { // go down a level if its not a leaf
-            long page_id = ptr.children[index];
-            node child   = read_node(page_id);
-            int  state   = erase(child, value);
-
-            if (state == BT_UNDERFLOW)
-            {
-                merge(ptr, index);
-            }
-        }
-        else
-        {
-            ptr.erase_in_node(index);
-            write_node(ptr.page_id, ptr);
-        }
-
-        return ptr.is_underflow() ? BT_UNDERFLOW : OKK;
+        return ptr.is_overflow() ? BT_OVERFLOW : NORMAL;
     }
 
     void split(node &parent, int pos)
     {
-        node ptr   = this->read_node(parent.children[pos]);
-        node left  = this->new_node();
-        node right = this->new_node();
+        node left      = this->read_node(parent.children[pos]);
+        node right     = this->new_node();
+        bool left_leaf = left.is_leaf();
+        parent.insert_in_node(pos, left.data[BTREE_ORDER / 2]);
 
-        int iter = 0;
-        int i;
-        for (i = 0; iter < BTREE_ORDER / 2; i++)
+        for (int iter = BTREE_ORDER / 2 + !left_leaf, i = 0;
+             iter < BTREE_ORDER + 1;
+             iter++, i++)
         {
-            left.children[i] = ptr.children[iter];
-            left.data[i]     = ptr.data[iter];
-            left.count++;
-            iter++;
+            right.children[i] = left.children[iter];
+            right.data[i]     = left.data[iter];
+            right.count++;
+            left.data[iter]     = T();
+            left.children[iter] = 0;
+            left.count--;
         }
 
-        left.children[i] = ptr.children[iter];
-        int j            = i - 1;
-
-        parent.insert_in_node(pos, ptr.data[iter]);
-        if (ptr.children[iter] == 0)
-        {           // if is leaf node
-            iter++; // the middle element
-            for (i = 0; iter < BTREE_ORDER + 1; i++)
-            {
-                right.children[i] = ptr.children[iter];
-                right.data[i]     = ptr.data[iter - 1];
-                right.data[i + 1] = ptr.data[iter];
-                right.count += 2;
-
-                iter++;
-            }
-        }
-        else
-        {
-            iter++; // the middle element
-            for (i = 0; iter < BTREE_ORDER + 1; i++)
-            {
-                right.children[i] = ptr.children[iter];
-                right.data[i]     = ptr.data[iter];
-                right.count++;
-                iter++;
-            }
-        }
-        left.next_id = right.page_id;
-
-        right.children[i] = ptr.children[iter];
+        right.children[right.count]    = left.children[BTREE_ORDER + 1];
+        left.children[BTREE_ORDER + 1] = 0;
 
         parent.children[pos]     = left.page_id;
         parent.children[pos + 1] = right.page_id;
+
+        if (!left_leaf)
+        {
+            left.data[BTREE_ORDER / 2] = T();
+            left.count--;
+        }
+        else
+        {
+            right.next_id = left.next_id;
+            left.next_id  = right.page_id;
+        }
 
         write_node(parent.page_id, parent);
         write_node(left.page_id, left);
         write_node(right.page_id, right);
     }
 
-    void merge(node &parent, int pos)
-    {
-        node ptr      = this->read_node(parent.children[pos + 1]);
-        node root_ptr = this->read_node(this->header.root_id);
-        node left     = this->new_node();
-        node right    = this->new_node();
-
-        int iter = 0, i;
-
-        if (!parent.data[pos - 1])
-        { // if leaf left is empty
-            for (i = 0; iter < BTREE_ORDER / 2; i++)
-            {
-                left.children[i] = ptr.children[iter];
-                left.data[i]     = ptr.data[iter];
-                left.count++;
-                iter++;
-            }
-
-            left.children[i] = ptr.children[iter];
-
-            for (i = 0; iter < BTREE_ORDER; i++)
-            {
-                right.children[i] = ptr.children[iter];
-                right.data[i]     = ptr.data[iter];
-                right.count++;
-                iter++;
-            }
-
-            left.next_id = right.page_id;
-
-            right.children[i] = ptr.children[iter];
-
-            parent.children[pos]     = left.page_id;
-            parent.children[pos + 1] = right.page_id;
-            parent.data[0]           = right.data[right.count - 1];
-
-            write_node(parent.page_id, parent);
-            write_node(left.page_id, left);
-            write_node(right.page_id, right);
-        }
-    }
-
     void split_root()
     {
-        node ptr   = this->read_node(this->header.root_id);
-        node left  = this->new_node();
-        node right = this->new_node();
+        node ptr       = this->read_node(this->header.root_id);
+        bool root_leaf = ptr.is_leaf();
+        node left      = this->new_node();
+        node right     = this->new_node();
 
         int pos  = 0;
         int iter = 0;
@@ -399,182 +270,87 @@ class btree
             left.count++;
             iter++;
         }
-
         left.children[i] = ptr.children[iter];
-
-        if (ptr.children[iter] == 0)
-        {
+        if (not root_leaf)
             iter++; // the middle element
-            for (i = 0; iter < BTREE_ORDER + 1; i++)
-            {
-                right.children[i] = ptr.children[iter];
-                right.data[i]     = ptr.data[iter - 1];
-                right.data[i + 1] = ptr.data[iter];
-                right.count += 2;
-                iter++;
-            }
-        }
-        else
+        for (i = 0; iter < BTREE_ORDER + 1; i++)
         {
-            iter++; // the middle element
-            for (i = 0; iter < BTREE_ORDER + 1; i++)
-            {
-                right.children[i] = ptr.children[iter];
-                right.data[i]     = ptr.data[iter];
-                right.count++;
-                iter++;
-            }
+            right.children[i] = ptr.children[iter];
+            right.data[i]     = ptr.data[iter];
+            right.count++;
+            iter++;
         }
-
         right.children[i] = ptr.children[iter];
 
+        std::fill(std::begin(ptr.children), std::end(ptr.children), 0);
         ptr.children[pos]     = left.page_id;
         ptr.data[0]           = ptr.data[BTREE_ORDER / 2];
         ptr.children[pos + 1] = right.page_id;
         ptr.count             = 1;
-
-        if (ptr.children[iter] == 0)
-        {
+        if (root_leaf)
             left.next_id = right.page_id;
-        }
 
         write_node(ptr.page_id, ptr);
         write_node(left.page_id, left);
         write_node(right.page_id, right);
     }
 
-    void merge_root()
+    iterator lower_bound(T const &value) const
     {
-        node ptr   = this->read_node(this->header.root_id);
-        node left  = this->new_node();
-        node right = this->new_node();
-
-        int pos  = 0;
-        int iter = 0;
-        int i;
-
-        if (!ptr.children[0])
+        node ptr = read_node(header.root_id);
+        while (not ptr.is_leaf())
         {
-
-            for (i = 0; iter < BTREE_ORDER / 2; i++)
-            {
-                left.children[i] = ptr.children[iter];
-                left.data[i]     = ptr.data[iter];
-                left.count++;
-                iter++;
-            }
-
-            left.children[i] = ptr.children[iter];
-
-            if (ptr.children[iter] == 0)
-            {
-                iter++; // the middle element
-                for (i = 0; iter < BTREE_ORDER + 1; i++)
-                {
-                    right.children[i] = ptr.children[iter];
-                    right.data[i]     = ptr.data[iter - 1];
-                    right.data[i + 1] = ptr.data[iter];
-                    right.count += 2;
-                    iter++;
-                }
-            }
-            else
-            {
-                iter++; // the middle element
-                for (i = 0; iter < BTREE_ORDER + 1; i++)
-                {
-                    right.children[i] = ptr.children[iter];
-                    right.data[i]     = ptr.data[iter];
-                    right.count++;
-                    iter++;
-                }
-            }
-
-            right.children[i] = ptr.children[iter];
-
-            ptr.children[pos]     = left.page_id;
-            ptr.data[0]           = ptr.data[BTREE_ORDER / 2];
-            ptr.children[pos + 1] = right.page_id;
-            ptr.count             = 1;
-
-            if (ptr.children[iter] == 0)
-            {
-                left.next_id = right.page_id;
-            }
-
-            write_node(ptr.page_id, ptr);
-            write_node(left.page_id, left);
-            write_node(right.page_id, right);
-        }
-    }
-
-    typename btree<T, BTREE_ORDER>::iterator end() { return iterator(this); }
-
-    iterator begin()
-    {
-        node root = read_node(header.root_id);
-        return iterator(this, root);
-    }
-
-    iterator find(const T &value)
-    {
-        node root = read_node(header.root_id);
-        return find(root, 0, value);
-    }
-
-    iterator find(node &ptr, int level, const T &value)
-    {
-        int i;
-
-        for (i = ptr.count - 1; i >= 0; i--)
-        {
-            if (ptr.children[i + 1])
-            {
-                node child = read_node(ptr.children[i + 1]);
-
-                if (ptr.data[i] > value)
-                {
-                    child = read_node(ptr.children[i - 1]);
-                    find(child, level + 1, value);
-                }
-
-                else
-                {
-                    find(child, level + 1, value);
-                }
-            }
-
-            if (ptr.data[i] > value)
-            {
-                return iterator(this);
-            }
-
-            if (ptr.data[i] < value)
-            {
-                return iterator(this);
-            }
-
-            if (ptr.data[i] == value)
-            {
-                return iterator(this, ptr);
-            }
+            int pos = 0;
+            while (pos < ptr.count and ptr.data[pos] < value)
+                ++pos;
+            ptr = read_node(ptr.children[pos]);
         }
 
-        if (ptr.children[i + 1])
-        {
-            node child = read_node(ptr.children[i + 1]);
-
-            find(child, level + 1, value);
-        }
+        int pos = ptr.lower_bound(value);
+        // In case next_id doesn't exist, it returns end()
+        if (pos == ptr.count)
+            return iterator(*this, ptr.next_id, 0);
+        return iterator(*this, ptr.page_id, pos);
     }
 
-    void print(std::ostream &out)
+    iterator upper_bound(T const &value) const
+    {
+        auto it = lower_bound(value);
+        while (it != end() and *it == value)
+            ++it;
+        return it;
+    }
+    iterator find(T const &value) const
+    {
+        auto it = lower_bound(value);
+        if (it == end() or !(*it == value))
+            return end();
+        return it;
+    }
+
+    std::pair<iterator, iterator> find(T const &low_key,
+                                       T const &high_key) const
+    {
+        iterator first = lower_bound(low_key), last = upper_bound(high_key);
+        return {first, last};
+    }
+
+    iterator begin() const
+    {
+        node ptr = read_node(header.root_id);
+        while (not ptr.is_leaf())
+            ptr = read_node(ptr.children[0]);
+        return iterator(*this, ptr.page_id, 0);
+    }
+    iterator end() const { return iterator(*this, -1, 0); }
+
+    void print(std::ostream &out) const
     {
         node root = read_node(header.root_id);
         print(root, 0, out);
     }
 
-    void print(node &ptr, int level, std::ostream &out)
+    void print(node &ptr, int level, std::ostream &out) const
     {
         int i;
         for (i = 0; i < ptr.count; i++)
@@ -585,9 +361,7 @@ class btree
                 print(child, level + 1, out);
             }
             else
-            {
                 out << ptr.data[i];
-            }
         }
         if (ptr.children[i])
         {
@@ -596,14 +370,14 @@ class btree
         }
     }
 
-    void print_tree()
+    void print_tree() const
     {
         node root = read_node(header.root_id);
         print_tree(root, 0);
         std::cout << "________________________\n";
     }
 
-    void print_tree(node &ptr, int level)
+    void print_tree(node &ptr, int level) const
     {
         int i;
         for (i = ptr.count - 1; i >= 0; i--)
@@ -627,5 +401,6 @@ class btree
         }
     }
 };
+
 } // namespace disk
 } // namespace db
