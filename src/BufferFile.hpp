@@ -34,5 +34,6 @@ public:
 
 	char *buffer;
 	int buffer_size;
+	char *curr_key;
   std::fstream file;
 };

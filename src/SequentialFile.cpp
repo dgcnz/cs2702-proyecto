@@ -85,8 +85,9 @@ int SequentialFile<>::insert_file(char *name) {
 		std::stringstream ss(line);
 
 		char *writable = new char [10000];
+
 		char tmp = line[0];
-		writable = &tmp;
+		writable = new char (tmp);
 
 		insert(writable, pos);
 

@@ -6,6 +6,8 @@
 BufferFile::BufferFile () {
 	buffer = new char [1000000];
 	buffer_size = 0;
+	curr_key = new char [10000];
+	curr_key = "-1";
 }
 
 
@@ -75,29 +77,34 @@ int BufferFile::insert (char *key, int disk_addr) {
 	if (file.eof()) return -1;
 
 	char *current_key = new char [10000];
-	int pos = file.tellg();
+	int pos;
 
-	file.read((char *) current_key, sizeof(10000));
-	std::cout << "curr_key:" << *key << '\n';
+	// file.read((char *) current_key, sizeof(10000));
 
-	if (current_key != nullptr && current_key[0] == '\0') {
+	//if (!file.good()) std::cout << "error\n";
+	std::cout << "curr key:" << curr_key << '\n';
+	if  (curr_key == "-1") {
+		pos = file.tellg();
+	
+		file.write((char *) &key, sizeof(current_key));
+		
 		Register reg (key, -1, disk_addr);
-
-		file.write((char *) key, sizeof(key));
+		
 		file.write((char *) &reg, sizeof(reg));
 
-		std::cout << "hi\n";
+		curr_key = key;
 		return 1;
 	}
+	
 
-	while (key > current_key) {
+	while (key > curr_key) {
 		std::cout << "here\n";
 		file.read((char *) current_key, sizeof(10000));
 		file.read((char *) buffer, sizeof(int) * 2);
 
 		std::cout << buffer;
 
-		pos = file.tellg();
+		//pos = file.tellg();
 		if (file.fail()) {
 			file.clear();
 			return -1;
