@@ -5,17 +5,40 @@
 #include <string>
 #include <sstream>
 
-template<>
-SequentialFile<50>::SequentialFile () {
-	filename = new char;
-	dir_file = new BufferFile;
-}
-
 void make_names (char *name, char *&dir_name) {
 	std::ostringstream tmp;
-	tmp << name << ".dir" << std::ends;
+	tmp << name << ".dat" << std::ends;
 	dir_name = strdup(tmp.str().c_str());
 }
+
+template <>
+int SequentialFile<>::create(char *name) {
+	char *dir_name;
+
+	make_names(name, dir_name);
+
+	int result = dir_file->create(dir_name);
+	
+	if (result == -1) return -1;
+
+	filename = dir_name;
+
+	return result;
+}
+
+template<>
+SequentialFile<>::SequentialFile () {
+	filename = new char;
+	dir_file = new BufferFile;
+	
+	int result = create("data");
+	
+	if (result == -1) {
+		std::cout << "error creating\n";
+	}
+}
+
+
 
 template <>
 int SequentialFile<>::open (char *name) {
@@ -39,23 +62,10 @@ int SequentialFile<>::open (char *name) {
 
 
 
-template <>
-int SequentialFile<>::create(char *name) {
-	char *dir_name;
 
-	make_names(name, dir_name);
-
-	int result = dir_file->create(dir_name);
-	
-	if (result == -1) return -1;
-
-	filename = dir_name;
-
-	return result;
-}
 
 template<>
-int SequentialFile<>::insert(char *key, int addr) {
+int SequentialFile<>::insert(int key, int addr) {
 	//int pos = search(key);
 
 	//if (search(key) != -1) return dir_file->insert(key, addr);
@@ -66,10 +76,10 @@ int SequentialFile<>::insert(char *key, int addr) {
 
 template <>
 int SequentialFile<>::insert_file(char *name) {
-
+	dir_file->mainfile = name;
 	std::fstream file (name, std::ios::in | std::ios::binary);
 
-	std::string line, colname;
+	std::string line, colname, id;
 
 	// read and save the headers
 	if (file.good()) {	
@@ -85,30 +95,35 @@ int SequentialFile<>::insert_file(char *name) {
 		std::stringstream ss(line);
 
 		char *writable = new char [10000];
-		char tmp = line[0];
-		writable = &tmp;
 
-		insert(writable, pos);
+		std::getline (ss, id, ',');
+
+		insert(std::stoi(id), pos);
 
 		pos = file.tellg();
 	}
 		
+		dir_file->merge_file();
 		file.clear();
 	
-		file.seekg(13, file.beg);
-		char *h = new char[1000];
-		file.read(h, 1000);
-
 		return 1;
 }
 
 
 template<>
-int SequentialFile<>::search(char *key) {
-	/*int bucket_addr = find(key);
+int SequentialFile<>::search(int key, int key2) {
+	if (key == -1) return dir_file->read();
 
-	load_bucket(current_bucket, bucket_addr);
+	if (key != -1 && key2 == -1) return dir_file->read(key);
 
-	return dir_file->search(key);*/
+	if (key != -1 && key2 != -1) return dir_file->read(key, key2); 
+
+	return -1;
 }
 
+template<>
+int SequentialFile<>::remove(int key) {
+	return dir_file->remove(key);
+
+	return 0;
+}
