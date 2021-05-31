@@ -14,12 +14,13 @@ public:
 	int open (char *name);
 	int create (char *name);
 	int insert_file (char *name);
-	int search (char *key);
+	int search (int key = -1, int key2 = -1);
+	int remove (int key);
 
 	std::vector<std::string> headers; 
 
 protected:
-	int insert (char *key, int addr);
+	int insert (int key, int addr);
 
 	char *filename;
 	BufferFile *dir_file;
