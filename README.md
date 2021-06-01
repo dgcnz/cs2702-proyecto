@@ -44,7 +44,11 @@ El proceso de inserción es bastantes simple, lee el header del root e inserta e
 #### Eliminación
 
 ### Sequential File
+El Sequential File cuenta con una simple inserción y busqueda, aunque se requiere tiempo extra de pre ordenamiento para mantener el archivo auxiliar ordenado fisicamente, este tiempo extra nos sirve para rapidas búsquedas.
+
 #### Descripción
+Dentro de nuestra implementación usaremos la clase `BufferFile` para manejar todas las lecturas y escrituras a disco. De esta manera podemos utilizar la estructura principal como controler según la cantidad de registros que nuestro archivo auxiliar pueda soportar.
+
 #### Búsqueda
 
 #### Búsqueda por rango
