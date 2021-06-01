@@ -225,7 +225,7 @@ int BufferFile::read_disk (int addr, bool del) {
 		std::getline (main, line);
 		std::stringstream ss (line);
 	
-		if (!del) std::cout << line << '\n';
+		//if (!del) std::cout << line << '\n';
 
 		return 1;
 	}
@@ -401,10 +401,7 @@ int BufferFile::remove (int key) {
 	int pos = find(key, true);
 	int to_delete = -2;
 	
-	if (pos == -1) {
-		std::cout << "here error\n";
-		return -1;
-	}
+	if (pos == -1) return -1;
 
 	file.seekg(sizeof(int));
 	file.read((char *) &to_delete, sizeof(int));
