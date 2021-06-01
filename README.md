@@ -31,6 +31,7 @@ Gracias a la teoría sabemos los tiempos de ejecución a esperar, pero la comple
 </p>
 
 La interfaz permite ejecutar consultas sobre los datasets utilizando cualquiera de los dos índices. Se diseño un parser para ejecutar las distintas funciones utilizando una versión adaptada de SQL. Las instrucciones consideradas fueron las siguientes:
+
 > Seleccionar todos los registros de una tabla de la base de datos.
 ```
 SELECT * FROM dataset
