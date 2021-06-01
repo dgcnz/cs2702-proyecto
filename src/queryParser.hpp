@@ -235,7 +235,7 @@ class QueryParser
         catch (const runtime_error &error)
         {
             ofstream file;
-            file.open(folderPath + "../input.txt", ios::trunc);
+            file.open(folderPath + "../input.csv", ios::trunc);
             file.write(error.what(), strlen(error.what()));
         }
     }
