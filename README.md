@@ -38,7 +38,6 @@ Se lee la header del root y se carga a un nodo temporal para luego poder ser bus
 
 #### Búsqueda por rango
 
-
 #### Inserción
 El proceso de inserción es bastantes simple, lee el header del root e inserta el key en el nodo correspondiente dentro del arreglo `children`. Por cada inserción se verifica si el nodo necesita un split o necesita ser guardado pues es hoja. Como en el B+ Tree las keys insertadas necesitan también indexarse dentro del ultimo nivel de nodos hojas, la función `insert` se encarga de colocarla dentro la posición necesaria sin duplicar su valor en el registro.
 
@@ -47,6 +46,7 @@ El proceso de inserción es bastantes simple, lee el header del root e inserta e
 ### Sequential File
 #### Descripción
 #### Búsqueda
+
 #### Búsqueda por rango
 #### Inserción
 #### Eliminación

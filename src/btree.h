@@ -4,10 +4,10 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
 #include <memory>
+#include <optional>
 #include <utility>
+#include <vector>
 
 namespace db
 {
@@ -16,6 +16,14 @@ namespace disk
 
 template <class T, int BTREE_ORDER>
 class btree;
+
+template <typename T, int BTREE_ORDER>
+btree<T, BTREE_ORDER> make_btree()
+{
+    std::shared_ptr<pagemanager> pm =
+        std::make_shared<pagemanager>("btree.index", true);
+    return btree<T, BTREE_ORDER>(pm);
+}
 
 template <class T, int BTREE_ORDER>
 class node;
@@ -80,6 +88,18 @@ struct btree_iterator
         node n = bt.read_node(page_id);
         return n.data[offset];
     }
+
+    bool valid() const
+    {
+        node ptr = bt.read_node(page_id);
+        return ptr.valid[offset];
+    }
+    void invalidate()
+    {
+        node ptr          = bt.read_node(page_id);
+        ptr.valid[offset] = false;
+        bt.write_node(ptr.page_id, ptr);
+    }
 };
 
 template <class T, int BTREE_ORDER>
@@ -92,10 +112,12 @@ struct node
 
     std::array<T, BTREE_ORDER + 1>    data;
     std::array<long, BTREE_ORDER + 2> children;
+    std::array<bool, BTREE_ORDER + 1> valid;
 
     node(long page_id) : page_id{page_id}, count(0), children{0}, data{0}
     {
         std::fill(std::begin(children), std::end(children), 0);
+        std::fill(std::begin(valid), std::end(valid), 1);
     }
 
     void insert_in_node(int pos, const T &value)
@@ -124,7 +146,6 @@ struct node
     {
         return std::count(begin(children), end(children), 0) == children.size();
     }
-    bool is_invalid() const { return page_id == -1; }
 };
 
 template <class T, int BTREE_ORDER = 3>
@@ -179,8 +200,8 @@ class btree
         return n;
     }
 
-    void write_node(long page_id, node n) { pm->save(page_id, n); }
-    void delete_node(long page_id, node n) { pm->erase(page_id, n); }
+    void write_node(long page_id, node n) const { pm->save(page_id, n); }
+    void delete_node(long page_id, node n) const { pm->erase(page_id, n); }
 
     void insert(const T &value)
     {
@@ -313,18 +334,37 @@ class btree
         return iterator(*this, ptr.page_id, pos);
     }
 
-    iterator upper_bound(T const &value) const
+    bool remove(T const &key)
     {
-        auto it = lower_bound(value);
-        while (it != end() and *it == value)
+        auto it = find_valid(key);
+        if (it == this->end())
+            return false;
+        it.invalidate();
+        return true;
+    }
+
+    iterator upper_bound(T const &key) const
+    {
+        auto it = lower_bound(key);
+        while (it != this->end() and *it == key)
             ++it;
         return it;
     }
-    iterator find(T const &value) const
+    iterator find(T const &key) const
     {
-        auto it = lower_bound(value);
-        if (it == end() or !(*it == value))
-            return end();
+        auto it = lower_bound(key);
+        if (it == this->end() or !(*it == key))
+            return this->end();
+        return it;
+    }
+
+    iterator find_valid(T const &key) const
+    {
+        auto it = find(key);
+        while (it != this->end() and !it.valid())
+            ++it;
+        if (it == this->end() or !(*it == key))
+            return this->end();
         return it;
     }
 
@@ -335,6 +375,45 @@ class btree
         return {first, last};
     }
 
+    std::optional<T> point_search(T const &key) const
+    {
+        auto it = find_valid(key);
+        if (it != this->end() or !(*it == key))
+            return std::nullopt;
+        return *it;
+    }
+
+    std::vector<T> range_search(T const &low_key, T const &high_key) const
+    {
+        auto [itl, itr] = find(low_key, high_key);
+        return entries(itl, itr);
+    }
+    std::vector<T> entries(iterator first, iterator last) const
+    {
+        std::vector<T> ans;
+        for (auto it = first; it != last; ++it)
+            if (it.valid())
+                ans.push_back(*it);
+        return ans;
+    }
+
+    void write(std::string filename) const
+    {
+        std::ofstream file;
+        file.open(filename, std::ios::trunc);
+        auto records = entries(this->begin(), this->end());
+        for (auto r : records)
+        {
+            std::vector<std::string> content = r.serialize();
+            if (content.size())
+                file << content[0];
+            for (int i = 1, m = content.size(); i < m; ++i)
+                file << "," << content[i];
+            file << "\n";
+        }
+        file.close();
+    }
+
     iterator begin() const
     {
         node ptr = read_node(header.root_id);
@@ -342,6 +421,7 @@ class btree
             ptr = read_node(ptr.children[0]);
         return iterator(*this, ptr.page_id, 0);
     }
+
     iterator end() const { return iterator(*this, -1, 0); }
 
     void print(std::ostream &out) const
