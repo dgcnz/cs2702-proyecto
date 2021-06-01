@@ -36,22 +36,27 @@ La interfaz permite ejecutar consultas sobre los datasets utilizando cualquiera 
 ```
 SELECT * FROM dataset
 ```
-> Insertar todos los datos desde un archivo `.csv`.
-```
+
 > Búsqueda por rango entre los registros con un begin <= registro.id <= end.
 ```
 SELECT * FROM users WHERE id RANGE 2 TO 10
 ```
+
 > Seleccionar un registro específico según su id.
 ```
 SELECT * FROM users WHERE id = 2
 ```
-INSERT FROM file
+
+> Insertar todos los datos desde un archivo `.csv`.
 ```
+INSERT * INTO users FROM dataset.txt
+```
+
 > Eliminar un registro utilizando su `id`.
 ```
 DELETE FROM users WHERE id = 12
 ```
+
 > Seleccionar uno de los dos índices disponibles. `B`: B+Tree o `SF`: Sequential File.
 ```
 USING INDEX index_type
