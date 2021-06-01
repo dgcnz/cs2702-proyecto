@@ -55,4 +55,3 @@ El proceso de inserción es bastantes simple, lee el header del root e inserta e
 ## Resultados experimentales
 
 ## Video de presentación
->>>>>>> 8f5a40e0852deeea61eb6f3b257ee7a75a99b57f
