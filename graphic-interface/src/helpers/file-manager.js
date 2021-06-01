@@ -4,7 +4,7 @@ module.exports = {
     writer : function (query){
         fs = require('fs');
         text = query;
-        fs.writeFile('./src/public/files/query.txt', text, function (err) {
+        fs.writeFile('./src/public/files/monitor/query.txt', text, function (err) {
         if (err) return console.log(err);
       });
     },
