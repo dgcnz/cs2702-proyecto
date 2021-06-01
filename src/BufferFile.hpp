@@ -30,26 +30,28 @@ public:
 //protected:
 	int open (char *filename);
 	int create (char *filename);
-	int close ();
 	int read (int addr = -1, int addr2 = -1);
 	int find (int addr);
 	int find (int addr, int addr2);
 	int read_all ();
-	int read_disk (int addr);
-	int write (int addr = -1);
 	int insert (int key, int disk_addr);
-	int insert_more (int pos, int pos_less, int key, int disk_addr, Register buffer);
 	int merge_file ();
 	int remove (int key);
 
+	char *filename;
+	char *mainfile;
+
+protected:
+	int write (int addr = -1);
+	int read_disk (int addr);
+	int insert_more (int pos, int pos_less, int key, int disk_addr, Register buffer);
 	void read_register (Register &reg);
 
 	int curr_key;
+
 	Register buffer_more;
 	Register buffer_less;
 	Register buffer;
 
-	char *filename;
-	char *mainfile;
   std::fstream file;
 };
