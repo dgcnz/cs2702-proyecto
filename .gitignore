@@ -8,3 +8,6 @@ conda/
 *.swp
 CMakeLists.txt
 graphic-interface/node_modules/
+btree.index
+btree2.index
+students.bin

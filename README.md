@@ -27,13 +27,31 @@ En la actualidad, las bases de datos cuplen un rol fundamental. Representan una 
 ### B+Tree
 #### Descripción
 #### Búsqueda
+
+Todas las funciones de busqueda y acceso son wrappers de `lower_bound`. Esta recorre el arbol hasta llegar a la primera hoja con key mayor o igual `value`.
+
+```cpp
+iterator lower_bound(T const &value) const;
+```
+
+Por ejemplo, `find` retorna el resultado de `lower_bound` si y solo si este es igual al key.
+
+```cpp
+iterator find(T const &value) const;
+```
+
 #### Búsqueda por rango
+
+```cpp
+pair<iterator, iterator> find(T const &low, T const &high) const;
+```
 #### Inserción
 #### Eliminación
 
 ### Sequential File
 #### Descripción
 #### Búsqueda
+
 #### Búsqueda por rango
 #### Inserción
 #### Eliminación
@@ -42,4 +60,3 @@ En la actualidad, las bases de datos cuplen un rol fundamental. Representan una 
 ## Resultados experimentales
 
 ## Video de presentación
->>>>>>> 8f5a40e0852deeea61eb6f3b257ee7a75a99b57f

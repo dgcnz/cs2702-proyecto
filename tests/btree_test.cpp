@@ -121,55 +121,91 @@ struct Pair
 
     bool operator==(const Pair &p) const { return id == p.id; }
 };
-TEST_F(DiskBasedBtree, Dictionary1)
+// TEST_F(DiskBasedBtree, Dictionary1)
+// {
+//
+//     std::shared_ptr<pagemanager> pm =
+//         std::make_shared<pagemanager>("btree2.index");
+//     btree<Pair, BTREE_ORDER> bt(pm);
+//
+//     pagemanager record_manager("students.bin");
+//     long        page_id;
+//     Student     p{10, false, "alex", "orihuela", 150};
+//     page_id = 0;
+//     record_manager.save(page_id, p);
+//
+//     bt.insert(Pair{p.id, page_id});
+//
+//     Student p1{20, true, "Luis", "sanchez", 100};
+//     page_id = 1;
+//     record_manager.save(page_id, p1);
+//     bt.insert(Pair{p1.id, page_id});
+//
+//     Student p2{30, false, "alvaro", "valera", 150};
+//     page_id = 2;
+//     record_manager.save(page_id, p2);
+//     bt.insert(Pair{p2.id, page_id});
+//
+//     Student p3{40, true, "javier", "Mayori", 15};
+//     page_id = 3;
+//     record_manager.save(page_id, p3);
+//     bt.insert(Pair{p3.id, page_id});
+//     // repeat ... Index one millon records (or one millon students)
+// }
+//
+// TEST_F(DiskBasedBtree, Dictionary2)
+// {
+//     pagemanager record_manager("students.bin");
+//
+//     std::shared_ptr<pagemanager> pm =
+//         std::make_shared<pagemanager>("btree.index");
+//     btree<Pair, BTREE_ORDER>           bt(pm);
+//     btree<Pair, BTREE_ORDER>::iterator iter = bt.find(Pair{50, -1});
+//     btree<Pair, BTREE_ORDER>::iterator end  = bt.find(Pair{100, -1});
+//     for (; iter != end; iter++)
+//     {
+//         auto    pair = *iter;
+//         Student s;
+//         record_manager.recover(pair.page_id, s);
+//         std::cout << pair.id << s.passed << s.name << s.surname <<
+//         s.n_credits
+//                   << std::endl;
+//     }
+// }
+
+// struct Register
+// {
+//     int  key;
+//     char text[20];
+//     bool operator<(const Register &r) const { return key < r.key; }
+//     bool operator<=(const Register &r) const { return key <= r.key; }
+//     bool operator>(const Register &r) const { return key > r.key; }
+//     bool operator==(const Register &r) const { return key == r.key; }
+//     std::vector<std::string> serialize()
+//     {
+//         return {std::to_string(key), std::string(text)};
+//     }
+// };
+
+TEST_F(DiskBasedBtree, Delete)
 {
-
     std::shared_ptr<pagemanager> pm =
-        std::make_shared<pagemanager>("btree2.index");
-    btree<Pair, BTREE_ORDER> bt(pm);
+        std::make_shared<pagemanager>("btree.index", true);
+    using char_btree = btree<char, BTREE_ORDER>;
+    char_btree bt(pm);
+    std::cout << "DELETE" << std::endl;
+    std::string val    = "abcdef";
+    std::string valaft = "acdef";
+    for (auto c : val)
+        bt.insert(c);
 
-    pagemanager record_manager("students.bin");
-    long        page_id;
-    Student     p{10, false, "alex", "orihuela", 150};
-    page_id = 0;
-    record_manager.save(page_id, p);
+    bt.remove('b');
+    std::vector<char> registers = bt.entries(bt.begin(), bt.end());
+    std::string    s;
+    std::copy(
+        std::begin(registers), std::end(registers), std::back_inserter(s));
 
-    bt.insert(Pair{p.id, page_id});
-
-    Student p1{20, true, "Luis", "sanchez", 100};
-    page_id = 1;
-    record_manager.save(page_id, p1);
-    bt.insert(Pair{p1.id, page_id});
-
-    Student p2{30, false, "alvaro", "valera", 150};
-    page_id = 2;
-    record_manager.save(page_id, p2);
-    bt.insert(Pair{p2.id, page_id});
-
-    Student p3{40, true, "javier", "Mayori", 15};
-    page_id = 3;
-    record_manager.save(page_id, p3);
-    bt.insert(Pair{p3.id, page_id});
-    // repeat ... Index one millon records (or one millon students)
-}
-
-TEST_F(DiskBasedBtree, Dictionary2)
-{
-    pagemanager record_manager("students.bin");
-
-    std::shared_ptr<pagemanager> pm =
-        std::make_shared<pagemanager>("btree.index");
-    btree<Pair, BTREE_ORDER>           bt(pm);
-    btree<Pair, BTREE_ORDER>::iterator iter = bt.find(Pair{50, -1});
-    btree<Pair, BTREE_ORDER>::iterator end  = bt.find(Pair{100, -1});
-    for (; iter != end; iter++)
-    {
-        auto    pair = *iter;
-        Student s;
-        record_manager.recover(pair.page_id, s);
-        std::cout << pair.id << s.passed << s.name << s.surname << s.n_credits
-                  << std::endl;
-    }
+    EXPECT_EQ(s, valaft);
 }
 
 // TEST_F(DiskBasedBtree, IndexingRandomElements2) {
