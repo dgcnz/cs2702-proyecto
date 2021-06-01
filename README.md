@@ -23,7 +23,32 @@ Gracias a la teoría sabemos los tiempos de ejecución a esperar, pero la comple
 
 ### Costos de operaciones en términos de acceso a la memoria secundaria
 
-## Descrición de las estructuras implmentadas
+## Interfaz Gráfica
+> La interfaz gráfica fue desarrollada utilizando **NodeJS** escrito en Javascript, para poder comunicar el frontend con el programa en C++ que ejecuta las instrucciones sobre las estructuras de datos seleccionadas.
+
+<p align="center">
+<img src="SRC" width="60%">
+</p>
+
+La interfaz permite ejecutar consultas sobre los datasets utilizando cualquiera de los dos índices. Se diseño un parser para ejecutar las distintas funciones utilizando SQL. Las instrucciones consideradas fueron las siguientes:
+> Seleccionar todos los registros de una tabla de la base de datos.
+```
+SELECT * FROM dataset
+```
+> Insertar todos los datos desde un archivo `.csv`.
+```
+INSERT FROM file
+```
+> Eliminar un registro utilizando su `id`.
+```
+DELETE FROM users WHERE id = 12
+```
+> Seleccionar uno de los dos índices disponibles. `B`: B+Tree o `SF`: Sequential File.
+```
+USING INDEX index_type
+```
+
+## Descripción de las estructuras implementadas
 La implementación de cada estructura varia pues se profundizo con mayor grado el Extendible Hash para lograr acércanos a los tiempos teóricos. Cabe recalcar que cada función y clase esta explicada dentro de la wiki del repositorio.
 
 ### B+Tree
