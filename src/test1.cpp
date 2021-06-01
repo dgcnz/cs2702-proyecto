@@ -15,10 +15,10 @@ int main() {
 	sf.search(6, 7);
 
 	std::cout << "\n\ndelete by key\n";
-	//if (sf.remove(3) == -1) std::cout << "error\n";
+	if (sf.remove(0) == -1) std::cout << "error\n";
 
 	std::cout << "new regs\n";
-	//sf.search();
+	sf.search();
 
 	return 0;
 }
