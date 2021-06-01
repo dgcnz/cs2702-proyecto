@@ -6,6 +6,7 @@
 #include <cassert>
 #include <memory>
 #include <optional>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -18,10 +19,10 @@ template <class T, int BTREE_ORDER>
 class btree;
 
 template <typename T, int BTREE_ORDER>
-btree<T, BTREE_ORDER> make_btree()
+btree<T, BTREE_ORDER> make_btree(std::string filename = "btree.index")
 {
     std::shared_ptr<pagemanager> pm =
-        std::make_shared<pagemanager>("btree.index", true);
+        std::make_shared<pagemanager>(filename, true);
     return btree<T, BTREE_ORDER>(pm);
 }
 
@@ -199,6 +200,7 @@ class btree
             pm->recover(page_id, n);
         return n;
     }
+
 
     void write_node(long page_id, node n) const { pm->save(page_id, n); }
     void delete_node(long page_id, node n) const { pm->erase(page_id, n); }

@@ -36,7 +36,7 @@ show_id,type,title,director,release_year,rating,duration
 1863,Movie,#Rucker50,Robert McCullough Jr.,2016,TV-PG,56 min
 6153,Movie,#Selfie,Cristina Jacob,2014,TV-MA,125 min
 4846,Movie,#Selfie 69,Cristina Jacob,2016,TV-MA,119 min
-159,TV Show,แผนร้ายนายเจ้าเล่ห์,,2016,TV-14,1 Season
+159,TV Show,noname,,2016,TV-14,1 Season
 6974,Movie,¡Ay mi madre!,Frank Ariza,2019,TV-MA,81 min
 3291,Movie,Çarsi Pazar,Muharrem Gülmez,2015,TV-14,97 min
 2237,Movie,Ég man þig,Óskar Thór Axelsson,2017,TV-MA,106 min
@@ -6655,8 +6655,7 @@ show_id,type,title,director,release_year,rating,duration
 6565,Movie,The Meaning of Monty Python,Albert Sharpe,2013,TV-MA,60 min
 5418,TV Show,The Mechanism,,2019,TV-MA,2 Seasons
 7229,Movie,The Memory of Water,Matías Bize,2015,TV-MA,88 min
-5412,Movie,"The Memphis Belle: A Story of a
-Flying Fortress",William Wyler,1944,TV-PG,40 min
+5412,Movie,"The Memphis Belle: A Story of a Flying Fortress",William Wyler,1944,TV-PG,40 min
 739,Movie,The Men Who Stare at Goats,Grant Heslov,2009,R,94 min
 7227,TV Show,The Mess You Leave Behind,,2020,TV-MA,1 Season
 7276,TV Show,The Messengers,,2015,TV-14,1 Season

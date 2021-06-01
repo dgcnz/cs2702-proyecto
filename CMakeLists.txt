@@ -43,7 +43,7 @@ endif ()
 
 function (blazingdb_artifact)
   set (OPTIONS OPTIONAL VIRTUAL)
-  set (ONE_VALUE_ARGS PREFIX TARGET)
+  set (ONE_VALUE_ARGS PREFIX TARGET TEST_TARGET MAIN)
   set (MULTI_VALUE_ARGS SOURCES INCLUDES LIBRARIES PUBLIC_HEADERS TESTS)
   cmake_parse_arguments (ARG "${OPTIONS}" "${ONE_VALUE_ARGS}"
     "${MULTI_VALUE_ARGS}" ${ARGN})
@@ -57,24 +57,32 @@ function (blazingdb_artifact)
   endif ()
 
   if (ARG_SOURCES)
+    add_library (${ARG_TEST_TARGET} ${TYPE} ${ARG_SOURCES})
     add_library (${ARG_TARGET} ${TYPE} ${ARG_SOURCES})
   endif()
 
   if (ARG_LIBRARIES)
+    target_link_libraries (${ARG_TEST_TARGET} ${ARG_LIBRARIES})
     target_link_libraries (${ARG_TARGET} ${ARG_LIBRARIES})
   endif ()
 
   if (ARG_INCLUDES)
+    target_include_directories (${ARG_TEST_TARGET} ${ARG_INCLUDES})
     target_include_directories (${ARG_TARGET} ${ARG_INCLUDES})
   endif ()
 
   if (ARG_LIBRARY_PATHS)
+    target_link_libraries (${ARG_TEST_TARGET} ${ARG_LIBRARY_PATHS})
     target_link_libraries (${ARG_TARGET} ${ARG_LIBRARY_PATHS})
   endif ()
 
   if (NOT ARG_PREFIX)
     set (ARG_PREFIX "")
   endif ()
+
+  install (TARGETS ${ARG_TEST_TARGET}
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib)
 
   install (TARGETS ${ARG_TARGET}
     LIBRARY DESTINATION lib
@@ -85,29 +93,37 @@ function (blazingdb_artifact)
     install(DIRECTORY ${ARG_PUBLIC_HEADERS} DESTINATION include)
   endif ()
 
+  add_executable (${ARG_TARGET}-exec ${ARG_MAIN} ${ARG_SOURCES})
+  target_include_directories (${ARG_TARGET} PUBLIC src)
+  target_link_libraries (${ARG_TARGET}-exec
+    ${ARG_TARGET})
+
   if (GTEST_FOUND AND ARG_TESTS)
-    message (STATUS "Log: unit test ${ARG_TARGET}-gtest")
-    add_executable (${ARG_TARGET}-gtest ${ARG_TESTS})
-    target_include_directories (${ARG_TARGET} PUBLIC src)
-    target_compile_options (${ARG_TARGET} PUBLIC -ggdb -O0)
-    target_link_libraries (${ARG_TARGET}-gtest
-        ${ARG_TARGET}
+    message (STATUS "Log: unit test ${ARG_TEST_TARGET}-gtest")
+    add_executable (${ARG_TEST_TARGET}-gtest ${ARG_TESTS})
+    target_include_directories (${ARG_TEST_TARGET} PUBLIC src)
+    target_compile_options (${ARG_TEST_TARGET} PUBLIC -ggdb -O0)
+    target_link_libraries (${ARG_TEST_TARGET}-gtest
+        ${ARG_TEST_TARGET}
         GTest::GTest
         $ENV{CONDA_PREFIX}/lib/libgmock_main.a
         $ENV{CONDA_PREFIX}/lib/libgmock.a )
         
-    add_custom_target (${ARG_TARGET}-gtest-run COMMAND $<TARGET_FILE:${ARG_TARGET}-gtest>)
+    add_custom_target (${ARG_TEST_TARGET}-gtest-run COMMAND $<TARGET_FILE:${ARG_TEST_TARGET}-gtest>)
 
-    add_test(NAME ${ARG_TARGET}-gtest COMMAND ${CMAKE_BINARY_DIR}/${ARG_TARGET}-gtest)
+    add_test(NAME ${ARG_TEST_TARGET}-gtest COMMAND ${CMAKE_BINARY_DIR}/${ARG_TEST_TARGET}-gtest)
 
-    add_dependencies (coverage ${ARG_TARGET}-gtest-run)
+    add_dependencies (coverage ${ARG_TEST_TARGET}-gtest-run)
   endif ()
 endfunction ()
 
 
 blazingdb_artifact (
         TARGET
-            btree
+            main
+
+        TEST_TARGET
+            tests
 
         INCLUDES PUBLIC 
             $ENV{CONDA_PREFIX}/include
@@ -121,17 +137,14 @@ blazingdb_artifact (
         PREFIX
           db
 
+        MAIN 
+          src/parserMain.cpp
+
         SOURCES
           src/pagemanager.cpp
-          # src/bucket.cpp
-          # src/bucketbuffer.cpp
-          # src/bufferfile.cpp
-          # src/bufferfilebucket.cpp
-          # src/lengthfieldbuffer.cpp
-          src/DataBase.cpp
 
         TESTS
           tests/btree_test.cpp
-          tests/database_test.cpp
 
 )
+
