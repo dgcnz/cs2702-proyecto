@@ -15,7 +15,7 @@ public:
 	int create (char *filename);
 	int close ();
 	int read (int addr = -1, int addr2 = -1);
-	int find (int addr);
+	int find (int addr, bool del = 0);
 	int find (int addr, int addr2);
 	int read_all ();
 	int insert (int key, int disk_addr);
@@ -45,7 +45,7 @@ protected:
 
 	void read_headers (std::fstream &file);
 	void write_headers (std::fstream &file, int to_r, int to_d);
-	int read_disk (int addr);
+	int read_disk (int addr, bool del = 0);
 	int insert_more (int pos, int pos_less, int key, int disk_addr);
 	void read_register (Register &reg);
 

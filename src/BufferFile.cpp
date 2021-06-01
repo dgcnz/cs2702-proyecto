@@ -54,7 +54,7 @@ int BufferFile::open (char *filename) {
 
 int BufferFile::create(char *filename) {
 	this->filename = filename;
-	file.open ((const char *) filename, std::ios::out | std::ios::binary);
+	file.open ((const char *) filename, std::ios::out | std::ios::trunc | std::ios::binary);
 
 	if (!file.good()) {
 		close();
@@ -84,7 +84,7 @@ int BufferFile::read(int addr, int addr1) {
 	return 0;
 }
 
-int BufferFile::find(int addr) {
+int BufferFile::find (int addr, bool del) {
 	int pos;
 	file.seekg(0);
 
@@ -96,10 +96,8 @@ int BufferFile::find(int addr) {
 	read_register(buffer);
 	
 	if (buffer.key == addr) {
-	 	if (read_disk(buffer.pos_disk) == -1) {
-			std::cout << "a\n";
+	 	if (del == 0 && read_disk(buffer.pos_disk) == -1) 
 			return -1;
-		}
 
 		return pos;
 	}
@@ -112,10 +110,7 @@ int BufferFile::find(int addr) {
 		read_register(buffer);
 
 		if (buffer.next_delete == -1 && buffer.key == addr) {
-			if (read_disk(buffer.pos_disk)  == -1) {
-			std::cout << "b\n";
-				return -1;
-			}
+			if (del == 0 && read_disk(buffer.pos_disk)  == -1) return -1;
 
 			return pos;
 		}
@@ -125,7 +120,6 @@ int BufferFile::find(int addr) {
 		if (file.fail()) {
 			file.clear();
 
-			std::cout << "c\n";
 			return -1;
 		}
 	}
@@ -135,16 +129,11 @@ int BufferFile::find(int addr) {
 
 	read_register(buffer);
 	if (buffer.key == addr) {
-		if (read_disk(buffer.pos_disk) == -1) {
-			std::cout << "d\n";
-			return -1;
-		}
+		if (del == 0 && read_disk(buffer.pos_disk) == -1) return -1;
 		
 		return pos;
 	}
 
-
-	std::cout << "e\n";
 	return -1;
 }
 
@@ -202,7 +191,6 @@ int BufferFile::read_all() {
 		read_disk(buffer.pos_disk);
 }
 
-	int i = 1;
 	while (buffer.next_register != -1) {
 		pos = buffer.next_register;
 		file.seekg(buffer.next_register);
@@ -212,17 +200,12 @@ int BufferFile::read_all() {
 		if (buffer.next_delete == -1 && pos != to_delete)
 			read_disk(buffer.pos_disk);
 
-		i++;
-
 		if (file.fail()) {
 			file.clear();
 			return -1;
 		}
 	}
 
-	//if (pos != to_delete) read_disk(buffer.pos_disk);
-
-	i++;
 
 	if (file.fail()) {
 		file.clear();
@@ -233,7 +216,7 @@ int BufferFile::read_all() {
 
 }
 
-int BufferFile::read_disk(int addr) {
+int BufferFile::read_disk (int addr, bool del) {
 	std::fstream main(mainfile, std::ios::in);
 	std::string line;
 
@@ -242,7 +225,7 @@ int BufferFile::read_disk(int addr) {
 		std::getline (main, line);
 		std::stringstream ss (line);
 	
-		std::cout << line << '\n';
+		if (!del) std::cout << line << '\n';
 
 		return 1;
 	}
@@ -253,8 +236,6 @@ int BufferFile::read_disk(int addr) {
 int BufferFile::insert (int key, int disk_addr) {
 	int pos = -1;
 
-	file.seekg(file.beg);
-
 	if (file.eof()) return -1;
 	
 	if  (!curr_key) {
@@ -264,7 +245,6 @@ int BufferFile::insert (int key, int disk_addr) {
 
 		pos = file.tellg();
 
-		std::cout << "pos:" << file.tellg() << '\n';
 		Register reg (key, disk_addr);
 		
 		file.write((char *) &reg, sizeof(reg));
@@ -417,8 +397,8 @@ int BufferFile::merge_file () {
 }
 
 
-int BufferFile::remove(int key) {
-	int pos = find(key);
+int BufferFile::remove (int key) {
+	int pos = find(key, true);
 	int to_delete = -2;
 	
 	if (pos == -1) {
