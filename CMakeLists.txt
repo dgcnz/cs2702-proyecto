@@ -144,7 +144,8 @@ blazingdb_artifact (
           src/pagemanager.cpp
 
         TESTS
-          tests/btree_test.cpp
+        # tests/btree_test.cpp
+          tests/btree_stress_tests.cpp
 
 )
 

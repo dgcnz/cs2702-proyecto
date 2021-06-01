@@ -23,10 +23,10 @@ struct Register
     char rating[10];
     char duration[10];
 
-    bool operator<(Register const &r) const{ return show_id < r.show_id; }
-    bool operator>(Register const &r) const{ return show_id > r.show_id; }
-    bool operator==(Register const &r)const { return show_id == r.show_id; }
-    bool operator<=(Register const &r)const { return show_id <= r.show_id; }
+    bool operator<(Register const &r) const { return show_id < r.show_id; }
+    bool operator>(Register const &r) const { return show_id > r.show_id; }
+    bool operator==(Register const &r) const { return show_id == r.show_id; }
+    bool operator<=(Register const &r) const { return show_id <= r.show_id; }
     vector<string> serialize() const
     {
         vector<string> ans;
@@ -75,13 +75,8 @@ void load(std::string filename, db::disk::btree<Register, BF> &bt)
     std::getline(file, line); // ignore header
     Register r;
     while (getline(file, line))
-    {
         if (parse_line(line, r))
-        {
-            // cout << r << endl;
             bt.insert(r);
-        }
-    }
 }
 
 class QueryParser
