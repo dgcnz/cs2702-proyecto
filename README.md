@@ -30,12 +30,20 @@ Gracias a la teoría sabemos los tiempos de ejecución a esperar, pero la comple
 <img src="SRC" width="60%">
 </p>
 
-La interfaz permite ejecutar consultas sobre los datasets utilizando cualquiera de los dos índices. Se diseño un parser para ejecutar las distintas funciones utilizando SQL. Las instrucciones consideradas fueron las siguientes:
+La interfaz permite ejecutar consultas sobre los datasets utilizando cualquiera de los dos índices. Se diseño un parser para ejecutar las distintas funciones utilizando una versión adaptada de SQL. Las instrucciones consideradas fueron las siguientes:
 > Seleccionar todos los registros de una tabla de la base de datos.
 ```
 SELECT * FROM dataset
 ```
 > Insertar todos los datos desde un archivo `.csv`.
+```
+> Búsqueda por rango entre los registros con un begin <= registro.id <= end.
+```
+SELECT * FROM users WHERE id RANGE 2 TO 10
+```
+> Seleccionar un registro específico según su id.
+```
+SELECT * FROM users WHERE id = 2
 ```
 INSERT FROM file
 ```
