@@ -1,5 +1,6 @@
 
 const inputFileName = 'input.csv';
+let header = '';
 
 function parseData(rawData) {
     registers = [];
@@ -46,6 +47,7 @@ async function readFileAndParseData(dataFileName){
 
 function buildHeader(headers) {
     output = "";
+    console.log(headers);
     headers.forEach((headerValue) => {
         output += `<th scope="col">${headerValue}</th>`;
     });
@@ -67,12 +69,13 @@ function buildBody(registers) {
 function fillTable(tableId, data) {
     var table = document.getElementById(tableId);
     table.innerHTML = "";
-    table.insertAdjacentHTML('beforeend',buildHeader(data[0]));
-    table.insertAdjacentHTML('beforeend', buildBody(data.slice(1, data.length)));
+    table.insertAdjacentHTML('beforeend',header);
+    table.insertAdjacentHTML('beforeend', buildBody(data));
 }
 
 async function reloadTableData(){
     let data = await readFileAndParseData(inputFileName);
+    header = buildHeader((await readFile('header.csv')).split(','));
     fillTable('table', data);
 }
 
