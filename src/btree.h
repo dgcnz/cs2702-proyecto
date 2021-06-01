@@ -201,7 +201,6 @@ class btree
         return n;
     }
 
-
     void write_node(long page_id, node n) const { pm->save(page_id, n); }
     void delete_node(long page_id, node n) const { pm->erase(page_id, n); }
 
@@ -399,11 +398,16 @@ class btree
         return ans;
     }
 
-    void write(std::string filename) const
+    void write_all(std::string filename)
+    {
+        write(filename, this->begin(), this->end());
+    }
+
+    void write(std::string filename, iterator first, iterator last) const
     {
         std::ofstream file;
         file.open(filename, std::ios::trunc);
-        auto records = entries(this->begin(), this->end());
+        auto records = entries(first, last);
         for (auto r : records)
         {
             std::vector<std::string> content = r.serialize();

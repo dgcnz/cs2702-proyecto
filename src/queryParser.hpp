@@ -1,3 +1,4 @@
+#include <cstring>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -22,10 +23,10 @@ struct Register
     char rating[10];
     char duration[10];
 
-    bool operator<(Register const &r) { return show_id < r.show_id; }
-    bool operator>(Register const &r) { return show_id > r.show_id; }
-    bool operator==(Register const &r) { return show_id == r.show_id; }
-    bool operator<=(Register const &r) { return show_id <= r.show_id; }
+    bool operator<(Register const &r) const{ return show_id < r.show_id; }
+    bool operator>(Register const &r) const{ return show_id > r.show_id; }
+    bool operator==(Register const &r)const { return show_id == r.show_id; }
+    bool operator<=(Register const &r)const { return show_id <= r.show_id; }
     vector<string> serialize() const
     {
         vector<string> ans;
@@ -140,20 +141,63 @@ class QueryParser
         switch (this->indexType)
         {
         case 0:
-            bt.write(folderPath + "../input.csv");
+        {
+            if (tokenize_query.size() > 4 and tokenize_query[4] == "WHERE")
+            {
+                // 0      1  2   3      4     5  6    7 8  9
+                // select * from users where id range 2 to 3
+                // select * from users where id = 2
+                if (tokenize_query.size() > 6 and tokenize_query[6] == "RANGE")
+                {
+                    Register regl, regr;
+                    regl.show_id    = stoi(tokenize_query[7]);
+                    regr.show_id    = stoi(tokenize_query[9]);
+                    auto [itl, itr] = bt.find(regl, regr);
+                    bt.write(folderPath + "../input.csv", itl, itr);
+                }
+                else
+                {
+                    Register reg;
+                    reg.show_id = stoi(tokenize_query[7]);
+                    auto itl = bt.find_valid(reg), itr = itl;
+                    if (itl == bt.end())
+                        throw runtime_error("% INVALID QUERY");
+                    else
+                        bt.write(folderPath + "../input.csv", itl, ++itr);
+                }
+            }
+            else
+            {
+                bt.write_all(folderPath + "../input.csv");
+            }
+        }
             // case 1 : call sequential
         }
     }
 
     void INSERT_FUNCTION(vector<string> tokenize_query)
     {
-        // INSERT INTO users VALUES (1,Andrea,Diaz,22,peruana);
-        cout << "Funciona el INSERT!\n";
+        // INSERT INTO users VALUES 1,Andrea Diaz,22,peruana;
     }
 
     void DELETE_FUNCTION(vector<string> tokenize_query)
     {
+        // 0      1    2     3      4 5 6
         // DELETE FROM users WHERE id = 12;
+
+        switch (this->indexType)
+        {
+        case 0:
+        {
+            {
+                Register reg;
+                reg.show_id = stoi(tokenize_query[6]);
+                bt.remove(reg);
+                bt.write_all(folderPath + "../input.csv");
+            }
+        }
+            // case 1 : call sequential
+        }
     }
 
     void INDEX_TYPE_SELECTION(vector<string> tokenize_query)
@@ -173,17 +217,26 @@ class QueryParser
         vector<string> tokenize_query;
         split(query, tokenize_query, ' ');
         string command = convertToUpperCase(query.substr(0, 6));
-        if (command == "SELECT")
-            SELECT_FUNCTION(tokenize_query);
-        else if (command == "INSERT")
-            INSERT_FUNCTION(tokenize_query);
-        else if (command == "DELETE")
-            DELETE_FUNCTION(tokenize_query);
-        else if (command == "USING ")
-            INDEX_TYPE_SELECTION(tokenize_query);
-        else
+        try
         {
-            cout << "Comando invalido.\n";
+            if (command == "SELECT")
+                SELECT_FUNCTION(tokenize_query);
+            else if (command == "INSERT")
+                INSERT_FUNCTION(tokenize_query);
+            else if (command == "DELETE")
+                DELETE_FUNCTION(tokenize_query);
+            else if (command == "USING ")
+                INDEX_TYPE_SELECTION(tokenize_query);
+            else
+            {
+                cout << "Comando invalido.\n";
+            }
+        }
+        catch (const runtime_error &error)
+        {
+            ofstream file;
+            file.open(folderPath + "../input.txt", ios::trunc);
+            file.write(error.what(), strlen(error.what()));
         }
     }
 };
