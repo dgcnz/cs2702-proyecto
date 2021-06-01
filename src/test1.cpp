@@ -1,6 +1,5 @@
 #include "SequentialFile.hpp"
 
-#include <chrono>
 #include <iostream>
 
 int main() {
