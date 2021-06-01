@@ -97,7 +97,6 @@ int SequentialFile<>::insert_file(char *name) {
 		char *writable = new char [10000];
 
 		std::getline (ss, id, ',');
-
 		insert(std::stoi(id), pos);
 
 		pos = file.tellg();
