@@ -11,3 +11,5 @@ graphic-interface/node_modules/
 btree.index
 btree2.index
 students.bin
+graphic-interface/src/public/files/monitor/query.txt
+graphic-interface/src/public/files/input.csv

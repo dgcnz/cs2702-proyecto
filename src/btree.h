@@ -6,6 +6,7 @@
 #include <cassert>
 #include <memory>
 #include <optional>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -18,10 +19,10 @@ template <class T, int BTREE_ORDER>
 class btree;
 
 template <typename T, int BTREE_ORDER>
-btree<T, BTREE_ORDER> make_btree()
+btree<T, BTREE_ORDER> make_btree(std::string filename = "btree.index")
 {
     std::shared_ptr<pagemanager> pm =
-        std::make_shared<pagemanager>("btree.index", true);
+        std::make_shared<pagemanager>(filename, true);
     return btree<T, BTREE_ORDER>(pm);
 }
 
@@ -397,11 +398,16 @@ class btree
         return ans;
     }
 
-    void write(std::string filename) const
+    void write_all(std::string filename)
+    {
+        write(filename, this->begin(), this->end());
+    }
+
+    void write(std::string filename, iterator first, iterator last) const
     {
         std::ofstream file;
         file.open(filename, std::ios::trunc);
-        auto records = entries(this->begin(), this->end());
+        auto records = entries(first, last);
         for (auto r : records)
         {
             std::vector<std::string> content = r.serialize();

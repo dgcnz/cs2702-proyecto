@@ -23,7 +23,46 @@ Gracias a la teoría sabemos los tiempos de ejecución a esperar, pero la comple
 
 ### Costos de operaciones en términos de acceso a la memoria secundaria
 
-## Descrición de las estructuras implmentadas
+## Interfaz Gráfica
+> La interfaz gráfica fue desarrollada utilizando **NodeJS** escrito en Javascript, para poder comunicar el frontend con el programa en C++ que ejecuta las instrucciones sobre las estructuras de datos seleccionadas.
+
+<p align="center">
+<img src="https://github.com/dgcnz/cs2702-proyecto/blob/master/imgs/graphic_interface.png?raw=true" width="60%">
+</p>
+
+La interfaz permite ejecutar consultas sobre los datasets utilizando cualquiera de los dos índices. Se diseño un parser para ejecutar las distintas funciones utilizando una versión adaptada de SQL. Las instrucciones consideradas fueron las siguientes:
+
+> Seleccionar todos los registros de una tabla de la base de datos.
+```
+SELECT * FROM dataset
+```
+
+> Búsqueda por rango entre los registros con un begin <= registro.id <= end.
+```
+SELECT * FROM users WHERE id RANGE 2 TO 10
+```
+
+> Seleccionar un registro específico según su id.
+```
+SELECT * FROM users WHERE id = 2
+```
+
+> Insertar todos los datos desde un archivo `.csv`.
+```
+INSERT * INTO users FROM dataset.txt
+```
+
+> Eliminar un registro utilizando su `id`.
+```
+DELETE FROM users WHERE id = 12
+```
+
+> Seleccionar uno de los dos índices disponibles. `B`: B+Tree o `SF`: Sequential File.
+```
+USING INDEX index_type
+```
+
+## Descripción de las estructuras implementadas
 La implementación de cada estructura varia pues se profundizo con mayor grado el Extendible Hash para lograr acércanos a los tiempos teóricos. Cabe recalcar que cada función y clase esta explicada dentro de la wiki del repositorio.
 
 ### B+Tree
@@ -44,7 +83,11 @@ El proceso de inserción es bastantes simple, lee el header del root e inserta e
 #### Eliminación
 
 ### Sequential File
+El Sequential File cuenta con una simple inserción y busqueda, aunque se requiere tiempo extra de pre ordenamiento para mantener el archivo auxiliar ordenado fisicamente, este tiempo extra nos sirve para rapidas búsquedas.
+
 #### Descripción
+Dentro de nuestra implementación usaremos la clase `BufferFile` para manejar todas las lecturas y escrituras a disco. De esta manera podemos utilizar la estructura principal como controler según la cantidad de registros que nuestro archivo auxiliar pueda soportar.
+
 #### Búsqueda
 
 #### Búsqueda por rango
