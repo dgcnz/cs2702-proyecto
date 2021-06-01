@@ -5,7 +5,7 @@
 int main() {
 	SequentialFile sf;
 
-	sf.insert_file("dataset.csv");
+	sf.insert_file("test.csv");
 	//sf.search();
 	
 	std::cout << "\nsearch by key\n";

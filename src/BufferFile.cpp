@@ -6,9 +6,28 @@
 #include <sstream>
 
 BufferFile::BufferFile () {
-	curr_key = -1;
+	curr_key = false;
+
+	to_read = -1;
+	to_delete = -1;
+
 	filename = new char [100000];
 	mainfile = new char [100000];
+}
+
+void BufferFile::read_headers (std::fstream &file) {
+	file.seekg(file.beg);
+
+	file.read((char *) &to_read, sizeof(int));
+	file.read((char *) &to_delete, sizeof(int));
+}
+
+
+void BufferFile::write_headers (std::fstream &file, int to_r, int to_d) {
+	file.seekg(0);
+
+	file.write((char *) &to_r, sizeof(int));
+	file.write((char *) &to_d, sizeof(int));
 }
 
 
@@ -24,12 +43,10 @@ int BufferFile::open (char *filename) {
 	this->filename = filename;
 
 	file.open (filename, std::ios::in | std::ios::out | std::ios::binary);
-
+	
 	if (!file.good()) return false;
 
-	// get to the beggining of the file
-	file.seekg(0, std::ios::beg);
-	file.seekp(0, std::ios::beg);
+	read_headers(file);
 
 	return file.good();
 }
@@ -37,15 +54,24 @@ int BufferFile::open (char *filename) {
 
 int BufferFile::create(char *filename) {
 	this->filename = filename;
-	file.open ((const char *) filename, std::ios::out | std::ios::in | std::ios::binary);
+	file.open ((const char *) filename, std::ios::out | std::ios::binary);
 
 	if (!file.good()) {
-		file.close();
-		file.clear();
+		close();
 		return -1;
 	}
 
+	write_headers(file, -1, -1);
+
+	close();
 	return 1;
+}
+
+
+int BufferFile::close() {
+    file.close();
+    file.clear();
+    return true;
 }
 
 int BufferFile::read(int addr, int addr1) {
@@ -226,18 +252,19 @@ int BufferFile::read_disk(int addr) {
 
 int BufferFile::insert (int key, int disk_addr) {
 	int pos = -1;
-	int to_read = -1;
-	int to_delete = -1;
+
+	file.seekg(file.beg);
 
 	if (file.eof()) return -1;
+	
+	if  (!curr_key) {
+		pos = file.tellg();
+	
+		write_headers (file, -1, -1);
 
-	if  (curr_key == -1) {
 		pos = file.tellg();
 
-		file.write((char *) &pos, sizeof(int));
-		file.write((char *) &to_delete, sizeof(int));
-
-		pos = file.tellg();
+		std::cout << "pos:" << file.tellg() << '\n';
 		Register reg (key, disk_addr);
 		
 		file.write((char *) &reg, sizeof(reg));
@@ -250,9 +277,7 @@ int BufferFile::insert (int key, int disk_addr) {
 	}
 
 	// read the min key
-	file.seekg(file.beg);
-	file.read((char *) &to_read, sizeof(int));
-	file.read((char *) &to_delete, sizeof(int));
+	read_headers (file);
 
 	if (to_delete != -1) {
 		file.seekg(to_delete);
@@ -277,7 +302,7 @@ int BufferFile::insert (int key, int disk_addr) {
 	file.seekg(to_read);
 	read_register(buffer_less);
 
-	if (key > buffer_less.key) return insert_more (pos, to_read, key, disk_addr, buffer_less);
+	if (key > buffer_less.key) return insert_more (pos, to_read, key, disk_addr);
 	
 	if (key < buffer_less.key) {
 		buffer.next_register = to_read;
@@ -295,7 +320,7 @@ int BufferFile::insert (int key, int disk_addr) {
 }
 
 
-int BufferFile::insert_more (int pos, int pos_less, int key, int disk_addr, Register buffer_less) {
+int BufferFile::insert_more (int pos, int pos_less, int key, int disk_addr) {
 	while (key > buffer_less.key && buffer_less.next_register != -1) {
 		file.seekg(buffer_less.next_register);
 

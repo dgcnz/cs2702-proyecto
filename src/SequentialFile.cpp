@@ -26,19 +26,6 @@ int SequentialFile<>::create(char *name) {
 	return result;
 }
 
-template<>
-SequentialFile<>::SequentialFile () {
-	filename = new char;
-	dir_file = new BufferFile;
-	
-	int result = create("data");
-	
-	if (result == -1) {
-		std::cout << "error creating\n";
-	}
-}
-
-
 
 template <>
 int SequentialFile<>::open (char *name) {
@@ -49,19 +36,31 @@ int SequentialFile<>::open (char *name) {
 
 	filename = dir_name;
 
-	//result = dir_file->open(dir_name);
+	result = dir_file->open(dir_name);
 
 	if (!result) return 0;
-
-	//result = dir_file->read();
-
-	if (result == -1) return 0;
 
 	return result;
 }
 
 
+template<>
+SequentialFile<>::SequentialFile () {
+	filename = new char;
+	dir_file = new BufferFile;
+	
+	int result = create("data");
+	
+	if (result == -1) {
+		std::cout << "error creating\n";
+	}
+	
+	result = open("data");
+	if (result == -1) {
+		std::cout << "error creating\n";
+	}
 
+}
 
 
 template<>
@@ -97,6 +96,7 @@ int SequentialFile<>::insert_file(char *name) {
 		char *writable = new char [10000];
 
 		std::getline (ss, id, ',');
+		
 		insert(std::stoi(id), pos);
 
 		pos = file.tellg();
