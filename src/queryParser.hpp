@@ -54,13 +54,13 @@ bool parse_line(string line, Register &r)
     char         buf[256];
     ss.getline(buf, 256, ',');
     r.show_id = stoi(buf);
-    ss.getline(r.type, 256, ',');
+    ss.getline(r.type, 20, ',');
     ss.getline(r.title, 256, ',');
     ss.getline(r.director, 256, ',');
     ss.getline(buf, 256, ',');
     r.release_year = stoi(buf);
-    ss.getline(r.rating, 256, ',');
-    ss.getline(r.duration, 256);
+    ss.getline(r.rating, 10, ',');
+    ss.getline(r.duration, 10);
     return true;
 };
 
@@ -77,7 +77,7 @@ void load(std::string filename, db::disk::btree<Register, BF> &bt)
     {
         if (parse_line(line, r))
         {
-            cout << r << endl;
+            // cout << r << endl;
             bt.insert(r);
         }
     }
