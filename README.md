@@ -143,7 +143,7 @@ Dentro de nuestra implementación usaremos la clase `BufferFile` para manejar to
 
 Se creo una estructura auxiliar a guardar dentro del los archivos auxiliares, dentro de esta guardamos las posiciones de siguiente registro, siguiente a eliminar y la posicion de lectura a disco.
 
-```
+```cpp
   struct Register {
     int next_register; 
     int next_delete;
