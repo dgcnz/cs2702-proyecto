@@ -1,10 +1,9 @@
 # `CS2702` Proyecto Base de Datos II
-
-## Datos Generales
-
 <p align="center">
 <img src="https://github.com/dgcnz/cs2702-proyecto/blob/master/imgs/database_home.png?raw=true" width="60%">
 </p>
+
+## Datos Generales
 
 ### Integrantes
 - Andrea Díaz - 201720031
