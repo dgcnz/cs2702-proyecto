@@ -215,7 +215,9 @@ Siguiendo con la forma teórica de la estructura, hacemos un `find()` de la `key
 
 ## Resultados experimentales
 
-En el test podemos notar la diferencia entre la complejidad asintotica de ambas estructuras. Por ejemplo, con 10k, se nota claramente el comportamiento lineal del sequential file y el comportamiento logaritmico del b+tree.
+En el test podemos notar la diferencia entre la complejidad asintótica de ambas estructuras. Por ejemplo, con 10k, se nota claramente el comportamiento lineal del sequential file y el comportamiento logaritmico del b+tree.
+
+Respecto a la interfaz gráfica, se logró realizar con exito su implementación. Es importante notar que la experiencia de usuario utilizando el índice del `B+Tree` fue bastante más agil que con el `Sequential File`.
 
 ## Video de presentación
 
