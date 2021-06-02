@@ -53,7 +53,7 @@ SELECT * FROM users WHERE id = 2
 
 Insertar todos los datos desde un archivo `.csv`.
 ```
-INSERT * INTO users FROM dataset.txt
+INSERT * INTO users FROM dataset.csv
 ```
 
 Eliminar un registro utilizando su `id`.
