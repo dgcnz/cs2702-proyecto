@@ -31,7 +31,7 @@ Gracias a la teoría sabemos los tiempos de ejecución a esperar, pero la comple
 La interfaz gráfica fue desarrollada utilizando **NodeJS** escrito en Javascript, para poder comunicar el frontend con el programa en C++ que ejecuta las instrucciones sobre las estructuras de datos seleccionadas.
 
 <p align="center">
-<img src="https://github.com/dgcnz/cs2702-proyecto/blob/master/imgs/graphic_interface.png?raw=true" width="60%">
+<img src="https://github.com/dgcnz/cs2702-proyecto/blob/master/imgs/graphic_interface.png?raw=true" width="70%">
 </p>
 
 La interfaz permite ejecutar consultas sobre los datasets utilizando cualquiera de los dos índices. Se diseño un parser para ejecutar las distintas funciones utilizando una versión adaptada de SQL. Las instrucciones consideradas fueron las siguientes:
