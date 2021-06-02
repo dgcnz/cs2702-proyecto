@@ -142,10 +142,13 @@ blazingdb_artifact (
 
         SOURCES
           src/pagemanager.cpp
+          src/BufferFile.cpp
+          src/SequentialFile.cpp
 
         TESTS
         # tests/btree_test.cpp
           tests/btree_stress_tests.cpp
+          tests/sequentialfile_test.cpp
 
 )
 

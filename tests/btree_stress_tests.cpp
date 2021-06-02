@@ -20,6 +20,13 @@ struct DiskBasedBtree : public ::testing::Test
 };
 using namespace db::disk;
 
+btree<int, BTREE_ORDER> bt100(std::make_shared<pagemanager>("btree100.index",
+                                                            true));
+btree<int, BTREE_ORDER> bt1000(std::make_shared<pagemanager>("btree100.index",
+                                                             true));
+btree<int, BTREE_ORDER> bt10000(std::make_shared<pagemanager>("btree100.index",
+                                                              true));
+
 void load(std::string filename, btree<int, BTREE_ORDER> &bt)
 {
     std::ifstream file;
@@ -34,32 +41,31 @@ void load(std::string filename, btree<int, BTREE_ORDER> &bt)
     }
 }
 
-TEST_F(DiskBasedBtree, Insert100)
-{
-    bool                         trunc_file = true;
-    std::shared_ptr<pagemanager> pm =
-        std::make_shared<pagemanager>("btree.index", trunc_file);
-    btree<int, BTREE_ORDER> bt(pm);
-    load("tests/t100.csv", bt);
+TEST_F(DiskBasedBtree, Insert100) { load("tests/t100.csv", bt100); }
 
+TEST_F(DiskBasedBtree, Insert1000) { load("tests/t1000.csv", bt1000); }
+
+TEST_F(DiskBasedBtree, Insert10000) { load("tests/t10000.csv", bt10000); }
+
+TEST_F(DiskBasedBtree, Search10000)
+{
+    srand(time(NULL));
+    int  n  = rand() % 100;
+    auto it = bt10000.find(n);
+    EXPECT_EQ(*it, n);
 }
 
-TEST_F(DiskBasedBtree, Insert1000)
+TEST_F(DiskBasedBtree, RangeSearch10000)
 {
-    bool                         trunc_file = true;
-    std::shared_ptr<pagemanager> pm =
-        std::make_shared<pagemanager>("btree.index", trunc_file);
-    btree<int, BTREE_ORDER> bt(pm);
-    load("tests/t1000.csv", bt);
-
+    srand(time(NULL));
+    int n           = rand() % 100;
+    auto [itl, itr] = bt10000.find(n, 100);
+    EXPECT_EQ(*itl, n);
 }
 
-TEST_F(DiskBasedBtree, Insert10000)
+TEST_F(DiskBasedBtree, Delete10000)
 {
-    bool                         trunc_file = true;
-    std::shared_ptr<pagemanager> pm =
-        std::make_shared<pagemanager>("btree.index", trunc_file);
-    btree<int, BTREE_ORDER> bt(pm);
-    load("tests/t10000.csv", bt);
-
+    srand(time(NULL));
+    int  n  = rand() % 100;
+    auto it = bt10000.remove(n);
 }

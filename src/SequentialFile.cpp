@@ -4,6 +4,8 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <cstdlib>
+#include <cstring>
 
 void make_names (char *name, char *&dir_name) {
 	std::ostringstream tmp;
