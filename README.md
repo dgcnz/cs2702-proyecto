@@ -220,13 +220,13 @@ Las pruebas fueron realizadas con cinco iteraciones sobre los distintos datasets
 En el test podemos notar la diferencia entre la complejidad asintótica de ambas estructuras. Por ejemplo, con 10k, se nota claramente el comportamiento lineal del Sequential File y el comportamiento logarítmico del B+Tree.
 
 <p align="center">
-<img src="https://github.com/dgcnz/cs2702-proyecto/blob/master/imgs/graph-1.png?raw=true" width="60%">
+<img src="https://github.com/dgcnz/cs2702-proyecto/blob/master/imgs/graph-1.png?raw=true" width="65%">
 </p>
 
 Respecto a la interfaz gráfica, se logró realizar con exito su implementación. Es importante notar que la experiencia de usuario utilizando el índice del `B+Tree` fue bastante más agil que con el `Sequential File`. Esto responde a lo mencionado anteriormente, en donde con un dataset de 10 mil registros el comportamiento del B+tree es logaritmico mientras que el del Sequential File es lineal.
 
 <p align="center">
-<img src="https://github.com/dgcnz/cs2702-proyecto/blob/master/imgs/graph-2.png?raw=true" width="60%">
+<img src="https://github.com/dgcnz/cs2702-proyecto/blob/master/imgs/graph-2.png?raw=true" width="65%">
 </p>
 
 ## Video de presentación
