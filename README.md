@@ -229,6 +229,8 @@ Respecto a la interfaz gráfica, se logró realizar con exito su implementación
 <img src="https://github.com/dgcnz/cs2702-proyecto/blob/master/imgs/graph-2.png?raw=true" width="65%">
 </p>
 
+Finalmente, se pudo observar que si bien el `B+Tree` (BT) tiene considerablemente un tiempo de ejecución menor al `Sequential File` (SF), en términos de acceso a disco, analizado en la función de búsqueda por rango, el BT realiza 127 accesos mientras el SF solo 13 aproximadamente.
+
 ## Video de presentación
 
 El video se subió a una carpeta de Google Drive y puede ser accedido con la cuenta de la UTEC desde [el siguiente enlace](https://drive.google.com/file/d/1SkVbmhARCn9FNkvNXsJyOllfyDazrDIa/view?usp=sharing).
