@@ -138,22 +138,22 @@ Siguiendo con la forma teórica de la estructura, hacemos un `find()` de la `key
 ## Testing
 ### Insertar
 <p align="center">
-<img src="https://github.com/dgcnz/cs2702-proyecto/blob/master/imgs/sequential_file_insertion.png?raw=true" width="60%">
+<img src="https://github.com/dgcnz/cs2702-proyecto/blob/master/imgs/sequential_file_insertion.png?raw=true" width="40%">
 </p>
 
 ### Busqueda Puntual
 <p align="center">
-<img src="https://github.com/dgcnz/cs2702-proyecto/blob/master/imgs/sequential_file_busqueda_puntual.png?raw=true" width="60%">
+<img src="https://github.com/dgcnz/cs2702-proyecto/blob/master/imgs/sequential_file_busqueda_puntual.png?raw=true" width="40%">
 </p>
 
 ### Busqueda por Rango
 <p align="center">
-<img src="https://github.com/dgcnz/cs2702-proyecto/blob/master/imgs/sequential_file_busqueda_rango.png?raw=true" width="60%">
+<img src="https://github.com/dgcnz/cs2702-proyecto/blob/master/imgs/sequential_file_busqueda_rango.png?raw=true" width="40%">
 </p>
 
 ### Eliminación
 <p align="center">
-<img src="https://github.com/dgcnz/cs2702-proyecto/blob/master/imgs/sequential_file_delete.png?raw=true" width="60%">
+<img src="https://github.com/dgcnz/cs2702-proyecto/blob/master/imgs/sequential_file_delete.png?raw=true" width="40%">
 </p>
 
 ## Resultados experimentales
