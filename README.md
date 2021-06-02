@@ -73,25 +73,66 @@ La implementación de cada estructura varia pues se profundizo con mayor grado e
 La gran diferencia entre archivos *indexados* y *secuenciales* se encuentra en la visualización de este. En el primero, vemos al archivo 
 como una set de *keys* con las cuales podemos acceder a este mientas que en el secuencial, uno solo puede acceder al archivo *secuencialmente*, ir realizando operaciones en el actual o siguiente archivo que se encuentre en memoria. Los dos métodos tienen sus beneficios y desventajas, es por esto que el B+ Tree es una gran alternativa para obtener lo mejor de estos; indexando los archivos como un B Tree y accediendo a estos de manera secuencial a conveniencia.
 
+
 #### Descripción
 Para manejar el B+ Tree se utilizaron tres clases, la principal de creación, una estructura nodo y un page manager que realiza las operaciones de archivos. Dentro de la estructura nodo se almacena el `page_id`, el id de próximo nodo (`next_id`), un counter de numero de keys, un arreglo para almacenar la data y otro que guarda las direcciones de sus hijos correspondientes.
+
+```cpp
+class btree
+{
+    shared_ptr<pagemanager> pm;
+    ...
+};
+```
+
+```cpp
+struct node
+{
+    long page_id{-1};
+    long next_id{-1};
+    long count{0};
+
+    array<T, BTREE_ORDER + 1>    data;
+    array<long, BTREE_ORDER + 2> children;
+    array<bool, BTREE_ORDER + 1> valid;
+    ...
+}
+```
 
 #### Búsqueda
 
 Se desciende desde el root hasta la hoja comparando la llave de busqueda con las llaves los nodos en nuestro camino. Tanto el costo en tiempo como en accesos a memoria es de `O(log n)`.
+
+```cpp
+optional<T> point_search(T const &key);
+```
 
 
 #### Búsqueda por rango
 
 La busqueda por rango no es mas que dos busquedas puntuales por los limites del rango y recuperar secuencialmente los valores entre ambas hojas encontradas. Tanto el costo en tiempo como en accesos a memoria es de `O(log n + m)`, donde `m` es la cantidad de registros en el rango (peor caso `m = O(n)`).
 
+
+```cpp
+vector<T> range_search(T const &low_key, T const &high_key);
+```
+
 #### Inserción
 
 El proceso de inserción es bastantes simple, lee el header del root e inserta el key en el nodo correspondiente dentro del arreglo `children`. Por cada inserción se verifica si el nodo necesita un split o necesita ser guardado pues es hoja. Como en el B+ Tree las keys insertadas necesitan también indexarse dentro del ultimo nivel de nodos hojas, la función `insert` se encarga de colocarla dentro la posición necesaria sin duplicar su valor en el registro.
 
+```cpp
+void insert(const T &value);
+```
+
 #### Eliminación
 
 La eliminacion en esta implementacion consiste en encontrar la hoja correspondiente a la llave de busqueda y marcarla como eliminada. 
+
+
+```cpp
+bool remove(T const &key);
+```
 
 ### Sequential File
 
