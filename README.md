@@ -24,7 +24,7 @@ Gracias a la teoría sabemos los tiempos de ejecución a esperar, pero la comple
 ### Costos de operaciones en términos de acceso a la memoria secundaria
 
 ## Interfaz Gráfica
-> La interfaz gráfica fue desarrollada utilizando **NodeJS** escrito en Javascript, para poder comunicar el frontend con el programa en C++ que ejecuta las instrucciones sobre las estructuras de datos seleccionadas.
+La interfaz gráfica fue desarrollada utilizando **NodeJS** escrito en Javascript, para poder comunicar el frontend con el programa en C++ que ejecuta las instrucciones sobre las estructuras de datos seleccionadas.
 
 <p align="center">
 <img src="https://github.com/dgcnz/cs2702-proyecto/blob/master/imgs/graphic_interface.png?raw=true" width="60%">
@@ -115,11 +115,13 @@ De esta manera evitamos guardar tanta informacion en archivos auxiliares y podem
 La estructura recibe un archivo como input y lo empieza a indexar linea por linea, leyendo solo la primera columna que por default se ha seleccionado como la columna de id (`key`), luego la estructura principal le entrega el `key` y la posicion de esta en el archivo principal. Dentro del `BufferFile` me encargo de insertar los `Registers` en el archivo auxliar, dentro de cada inserción lo inserto al final del archivo auxiliar pero actualizo punteros de `next_register`. Como sabemos que una de las ventajas del Sequential File es que los registros se encuentren ordenados fisicamente, la estructura tiene un template de tamaño de bloque y cuando la cantidad de inserciones supera a ese número, se escribe en un archivo auxiliar en orden y se elimina el anterior. Al final de la inserción de todo el archivo de nuevo se hace merge del registro para asegurarnos que nuestro archivo se encuentra correctamente ordenado fisicamente.
 
 #### Búsqueda
-Al pricipio se implementó una busqueda secuencial de keys dentro del archivo auxiliar 
+Al pricipio se implementó una busqueda secuencial de keys dentro del archivo auxiliar pues no se tenia un buen manejo de archivos, pero una vez que tuvimos la función de `merge_file` se pudo implementar la busqueda binaria que se esperaba. Una vez encontrada la key la funcion `find(key)` retorna la posición del key en el archivo auxiliar y llama a `read_disk(addr)` que imprime el registro completo de archivo principal.
 
 #### Búsqueda por rango
+Usando la misma lógica que la búqueda, encontramos la primera key y luego leemos el archivo secuencialmente, imprimiendo cada registro de disco, hasta llegar a la segunda key.
 
 #### Eliminación
+Siguiendo con la forma teórica de la estructura, hacemos un `find()` de la `key` que nos retorna la posición la cual leemos usando `seekg(pos)` dentro del auxiliar y rescribimos el header del archivo con el next delete nuevo y modificamos el `next_delete` de la key a eliminar. De esta manera usamos un algoritmo LIFO, donde la funcion `find()` y `merge_file()` ignoran los archivos que no tengan `-1` en `next_delete`. Para evitar problemas el último registro de la lista de registros a eliminar es `-2`.
 
 ## Testing
 ## Resultados experimentales
