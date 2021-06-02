@@ -174,4 +174,6 @@ Siguiendo con la forma teórica de la estructura, hacemos un `find()` de la `key
 
 ## Resultados experimentales
 
+En el test podemos notar la diferencia entre la complejidad asintotica de ambas estructuras. Por ejemplo, con 10k, se nota claramente el comportamiento lineal del sequential file y el comportamiento logaritmico del b+tree.
+
 ## Video de presentación
