@@ -32,32 +32,32 @@ Gracias a la teoría sabemos los tiempos de ejecución a esperar, pero la comple
 
 La interfaz permite ejecutar consultas sobre los datasets utilizando cualquiera de los dos índices. Se diseño un parser para ejecutar las distintas funciones utilizando una versión adaptada de SQL. Las instrucciones consideradas fueron las siguientes:
 
-> Seleccionar todos los registros de una tabla de la base de datos.
+Seleccionar todos los registros de una tabla de la base de datos.
 ```
 SELECT * FROM dataset
 ```
 
-> Búsqueda por rango entre los registros con un begin <= registro.id <= end.
+Búsqueda por rango entre los registros con un begin <= registro.id <= end.
 ```
 SELECT * FROM users WHERE id RANGE 2 TO 10
 ```
 
-> Seleccionar un registro específico según su id.
+Seleccionar un registro específico según su id.
 ```
 SELECT * FROM users WHERE id = 2
 ```
 
-> Insertar todos los datos desde un archivo `.csv`.
+Insertar todos los datos desde un archivo `.csv`.
 ```
 INSERT * INTO users FROM dataset.txt
 ```
 
-> Eliminar un registro utilizando su `id`.
+Eliminar un registro utilizando su `id`.
 ```
 DELETE FROM users WHERE id = 12
 ```
 
-> Seleccionar uno de los dos índices disponibles. `B`: B+Tree o `SF`: Sequential File.
+Seleccionar uno de los dos índices disponibles. `B`: B+Tree o `SF`: Sequential File.
 ```
 USING INDEX index_type
 ```
@@ -86,12 +86,39 @@ El proceso de inserción es bastantes simple, lee el header del root e inserta e
 El Sequential File cuenta con una simple inserción y busqueda, aunque se requiere tiempo extra de pre ordenamiento para mantener el archivo auxiliar ordenado fisicamente, este tiempo extra nos sirve para rapidas búsquedas.
 
 #### Descripción
-Dentro de nuestra implementación usaremos la clase `BufferFile` para manejar todas las lecturas y escrituras a disco. De esta manera podemos utilizar la estructura principal como controler según la cantidad de registros que nuestro archivo auxiliar pueda soportar.
+Dentro de nuestra implementación usaremos la clase `BufferFile` para manejar todas las lecturas y escrituras a disco. De esta manera podemos utilizar la estructura principal como controller según la cantidad de registros que nuestro archivo auxiliar pueda soportar. La estructura de `SequentialFile` contiene un template de bloques que puede soportar en el archivo auxiliar. 
+
+Se creo una estructura auxiliar a guardar dentro del los archivos auxiliares, dentro de esta guardamos las posiciones de siguiente registro, siguiente a eliminar y la posicion de lectura a disco.
+
+```
+  struct Register {
+    int next_register; 
+    int next_delete;
+    int pos_disk; // pos dentro del index.dat
+    int key; 
+
+    Register () {
+      next_register = -1;
+      next_delete = -1;
+    }
+
+    Register (int key, int pos) : key(key), pos_disk(pos) {
+      next_register = -1;
+      next_delete = -1;
+    }
+  };
+```
+
+De esta manera evitamos guardar tanta informacion en archivos auxiliares y podemos procesar datos de largo variable.
+
+#### Inserción
+La estructura recibe un archivo como input y lo empieza a indexar linea por linea, leyendo solo la primera columna que por default se ha seleccionado como la columna de id (`key`), luego la estructura principal le entrega el `key` y la posicion de esta en el archivo principal. Dentro del `BufferFile` me encargo de insertar los `Registers` en el archivo auxliar, dentro de cada inserción lo inserto al final del archivo auxiliar pero actualizo punteros de `next_register`. Como sabemos que una de las ventajas del Sequential File es que los registros se encuentren ordenados fisicamente, la estructura tiene un template de tamaño de bloque y cuando la cantidad de inserciones supera a ese número, se escribe en un archivo auxiliar en orden y se elimina el anterior. Al final de la inserción de todo el archivo de nuevo se hace merge del registro para asegurarnos que nuestro archivo se encuentra correctamente ordenado fisicamente.
 
 #### Búsqueda
+Al pricipio se implementó una busqueda secuencial de keys dentro del archivo auxiliar 
 
 #### Búsqueda por rango
-#### Inserción
+
 #### Eliminación
 
 ## Testing
