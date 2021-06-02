@@ -389,6 +389,7 @@ class btree
         auto [itl, itr] = find(low_key, high_key);
         return entries(itl, itr);
     }
+
     std::vector<T> entries(iterator first, iterator last) const
     {
         std::vector<T> ans;
