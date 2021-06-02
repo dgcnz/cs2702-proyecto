@@ -136,6 +136,26 @@ Usando la misma lógica que la búqueda, encontramos la primera key y luego leem
 Siguiendo con la forma teórica de la estructura, hacemos un `find()` de la `key` que nos retorna la posición la cual leemos usando `seekg(pos)` dentro del auxiliar y rescribimos el header del archivo con el next delete nuevo y modificamos el `next_delete` de la key a eliminar. De esta manera usamos un algoritmo LIFO, donde la funcion `find()` y `merge_file()` ignoran los archivos que no tengan `-1` en `next_delete`. Para evitar problemas el último registro de la lista de registros a eliminar es `-2`.
 
 ## Testing
+### Insertar
+<p align="center">
+<img src="https://github.com/dgcnz/cs2702-proyecto/blob/master/imgs/sequential_file_insertion.png?raw=true" width="60%">
+</p>
+
+### Busqueda Puntual
+<p align="center">
+<img src="https://github.com/dgcnz/cs2702-proyecto/blob/master/imgs/sequential_file_busqueda_puntual.png?raw=true" width="60%">
+</p>
+
+### Busqueda por Rango
+<p align="center">
+<img src="https://github.com/dgcnz/cs2702-proyecto/blob/master/imgs/sequential_file_busqueda_rango.png?raw=true" width="60%">
+</p>
+
+### Eliminación
+<p align="center">
+<img src="https://github.com/dgcnz/cs2702-proyecto/blob/master/imgs/sequential_file_delete.png?raw=true" width="60%">
+</p>
+
 ## Resultados experimentales
 
 ## Video de presentación
