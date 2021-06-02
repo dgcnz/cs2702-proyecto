@@ -219,6 +219,6 @@ En el test podemos notar la diferencia entre la complejidad asintotica de ambas 
 
 ## Video de presentación
 
-El video fue subido a una carpeta de Google Drive y puede ser accedido con la cuenta de la UTEC desde [el siguiente enlace](https://drive.google.com/file/d/1SkVbmhARCn9FNkvNXsJyOllfyDazrDIa/view?usp=sharing).
+El video se subió a una carpeta de Google Drive y puede ser accedido con la cuenta de la UTEC desde [el siguiente enlace](https://drive.google.com/file/d/1SkVbmhARCn9FNkvNXsJyOllfyDazrDIa/view?usp=sharing).
 
 
