@@ -77,16 +77,24 @@ como una set de *keys* con las cuales podemos acceder a este mientas que en el s
 Para manejar el B+ Tree se utilizaron tres clases, la principal de creación, una estructura nodo y un page manager que realiza las operaciones de archivos. Dentro de la estructura nodo se almacena el `page_id`, el id de próximo nodo (`next_id`), un counter de numero de keys, un arreglo para almacenar la data y otro que guarda las direcciones de sus hijos correspondientes.
 
 #### Búsqueda
-Se lee la header del root y se carga a un nodo temporal para luego poder ser buscado recursivamente dentro del árbol. Esta operación tiene un alto costo pues en cada iteración se tiene que leer el archivo para realizar las comparaciones correspondientes.
+
+Se desciende desde el root hasta la hoja comparando la llave de busqueda con las llaves los nodos en nuestro camino. Tanto el costo en tiempo como en accesos a memoria es de `O(log n)`.
+
 
 #### Búsqueda por rango
 
+La busqueda por rango no es mas que dos busquedas puntuales por los limites del rango y recuperar secuencialmente los valores entre ambas hojas encontradas. Tanto el costo en tiempo como en accesos a memoria es de `O(log n + m)`, donde `m` es la cantidad de registros en el rango (peor caso `m = O(n)`).
+
 #### Inserción
+
 El proceso de inserción es bastantes simple, lee el header del root e inserta el key en el nodo correspondiente dentro del arreglo `children`. Por cada inserción se verifica si el nodo necesita un split o necesita ser guardado pues es hoja. Como en el B+ Tree las keys insertadas necesitan también indexarse dentro del ultimo nivel de nodos hojas, la función `insert` se encarga de colocarla dentro la posición necesaria sin duplicar su valor en el registro.
 
 #### Eliminación
 
+La eliminacion en esta implementacion consiste en encontrar la hoja correspondiente a la llave de busqueda y marcarla como eliminada. 
+
 ### Sequential File
+
 El Sequential File cuenta con una simple inserción y busqueda, aunque se requiere tiempo extra de pre ordenamiento para mantener el archivo auxiliar ordenado fisicamente, este tiempo extra nos sirve para rapidas búsquedas.
 
 #### Descripción
